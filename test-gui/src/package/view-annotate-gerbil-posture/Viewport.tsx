@@ -39,7 +39,7 @@ const Viewport: FunctionComponent<Props> = ({width, height, image, postureAnnota
 				objectId: mm.key,
 				x: viewRect.x + mm.x * s,
 				y: viewRect.y + mm.y * s,
-				attributes: {fillColor: colorForMarkerKey(mm.key)}
+				attributes: {fillColor: colorForMarkerKey(mm.key), radius: 3}
 			})
 			if (ii > 0) {
 				const mmPrev = postureAnnotation.markers[ii - 1]

@@ -26,7 +26,6 @@ const AnnotateGerbilPostureView: FunctionComponent<Props> = ({data, width, heigh
 		const uri = urlState.postureAnnotations
 		if (uri) {
 			getFileData(uri, () => {}).then(x => {
-				console.log('--- x', x)
 				postureAnnotationsDispatch({type: 'setPostureAnnotations', postureAnnotations: x})
 			})
 		}
