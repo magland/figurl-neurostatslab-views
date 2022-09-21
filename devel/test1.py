@@ -33,7 +33,7 @@ def main():
         'type': 'neurostatslab.AnnotateGerbilPosture',
         'frames': frames
     }
-    F = fig.Figure(data=data, view_url='http://localhost:3000')
+    F = fig.Figure(data=data, view_url='gs://figurl/neurostatslab-views-1dev')
     print(F.url(label='test annotate gerbil posture'))
 
 def get_frame(stream: cv2.VideoCapture, frame_idx: int):
