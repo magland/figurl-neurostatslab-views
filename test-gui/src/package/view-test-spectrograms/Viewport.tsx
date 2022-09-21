@@ -1,7 +1,8 @@
-import { Scene2d, Scene2dObject } from "@figurl/core-views";
-import { FunctionComponent, useCallback, useMemo } from "react";
-import FrameImage, { useImageViewRect } from "./FrameImage";
+import React, { FunctionComponent, useCallback, useMemo } from "react";
 import { PostureAnnotation } from "./types";
+import FrameImage, {useImageViewRect} from './FrameImage'
+import { useWheelZoom } from "@figurl/spike-sorting-views";
+import { Scene2d, Scene2dObject } from "../component-scene2d";
 
 type Props ={
 	width: number
@@ -9,10 +10,13 @@ type Props ={
 	image?: number[][][]
 	postureAnnotation?: PostureAnnotation
 	onMoveMarker: (o: {key: string, x: number, y: number}) => void
+	onClick: (o: {x: number, y: number}) => void
 }
 
-const Viewport: FunctionComponent<Props> = ({width, height, image, postureAnnotation, onMoveMarker}) => {
+const Viewport: FunctionComponent<Props> = ({width, height, image, postureAnnotation, onMoveMarker, onClick}) => {
 	const viewRect = useImageViewRect({width, height, image})
+
+	const {affineTransform, handleWheel} = useWheelZoom(width, height)
 
 	const objects: Scene2dObject[] = useMemo(() => {
 		if ((!postureAnnotation) || (!image)) return []
@@ -23,8 +27,8 @@ const Viewport: FunctionComponent<Props> = ({width, height, image, postureAnnota
 				type: 'marker',
 				draggable: true,
 				objectId: mm.key,
-				x: viewRect.x + mm.x * s,
-				y: viewRect.y + mm.y * s,
+				x: viewRect.x + (mm.x + 0.5) * s,
+				y: viewRect.y + (mm.y + 0.5) * s,
 				attributes: {fillColor: colorForMarkerKey(mm.key), radius: 3}
 			})
 			if (ii > 0) {
@@ -53,18 +57,32 @@ const Viewport: FunctionComponent<Props> = ({width, height, image, postureAnnota
 		})
     }, [onMoveMarker, image, viewRect])
 
+	const handleClick = useCallback((p: {x: number, y: number}, e: React.MouseEvent) => {
+		const x = Math.floor((p.x - viewRect.x) / viewRect.w * (image?.length || 0))
+		const y = Math.floor((p.y - viewRect.y) / viewRect.h * ((image || [])[0]?.length || 0))
+		onClick({
+			x,
+			y
+		})
+    }, [onClick, image, viewRect])
+
 	return (
-		<div>
+		<div
+			onWheel={handleWheel}
+		>
 			{image && <FrameImage
 				width={width}
 				height={height}
 				image={image}
+				affineTransform={affineTransform}
 			/>}
 			<Scene2d
 				width={width}
 				height={height}
 				objects={objects}
 				onDragObject={handleDragObject}
+				onClick={handleClick}
+				affineTransform={affineTransform}
 			/>
 		</div>
 	)

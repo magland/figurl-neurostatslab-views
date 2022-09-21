@@ -1,10 +1,12 @@
 import { BaseCanvas } from "@figurl/core-views";
+import { AffineTransform, applyAffineTransform } from "@figurl/spike-sorting-views";
 import { FunctionComponent, useCallback, useMemo } from "react";
 
 type Props ={
 	width: number
 	height: number
 	image: number[][][]
+	affineTransform: AffineTransform
 }
 
 const emptyDrawData = {}
@@ -28,7 +30,7 @@ export const useImageViewRect = (a: {width: number, height: number, image?: numb
 	}, [image, width, height])
 }
 
-const FrameImage: FunctionComponent<Props> = ({width, height, image}) => {
+const FrameImage: FunctionComponent<Props> = ({width, height, image, affineTransform}) => {
 	const viewRect = useImageViewRect({width, height, image})
 	const imageData = useMemo(() => {
 		const N1 = image.length
@@ -57,8 +59,9 @@ const FrameImage: FunctionComponent<Props> = ({width, height, image}) => {
 
         // Scaling the offscreen canvas can be done when it's drawn in, which avoids having to deal with transforms and some margin issues.
         context.clearRect(0, 0, context.canvas.width, context.canvas.height)
-        context.drawImage(offscreenCanvas, viewRect.x, viewRect.y, viewRect.w, viewRect.h)
-    }, [offscreenCanvas, imageData, viewRect])
+		const R2 = applyAffineTransformToRect(affineTransform, viewRect)
+        context.drawImage(offscreenCanvas, R2.x, R2.y, R2.w, R2.h)
+    }, [offscreenCanvas, imageData, viewRect, affineTransform])
 	return (
 		<BaseCanvas
 			width={width}
@@ -67,6 +70,18 @@ const FrameImage: FunctionComponent<Props> = ({width, height, image}) => {
 			drawData={emptyDrawData}
 		/>
 	)
+}
+
+const applyAffineTransformToRect = (affineTransform: AffineTransform | undefined, r: {x: number, y: number, w: number, h: number}) => {
+	if (!affineTransform) return r
+	const p00 = applyAffineTransform(affineTransform, {x: r.x, y: r.y})
+	const p11 = applyAffineTransform(affineTransform, {x: r.x + r.w, y: r.y + r.h})
+	return {
+		x: p00.x,
+		y: p00.y,
+		w: p11.x - p00.x,
+		h: p11.y - p00.y
+	}
 }
 
 export default FrameImage

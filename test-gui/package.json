@@ -6,6 +6,7 @@
   "dependencies": {
     "@figurl/core-views": "^0.1",
     "@figurl/interface": "^0.1",
+    "@figurl/spike-sorting-views": "^0.1",
     "@figurl/timeseries-views": "^0.1",
     "@material-ui/core": "^4.12.4",
     "@testing-library/jest-dom": "^5.16.5",
