@@ -222,9 +222,9 @@
     react-sizeme "^3.0.2"
 
 "@figurl/timeseries-views@^0.1":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@figurl/timeseries-views/-/timeseries-views-0.1.3.tgz#83107f90fddab85308906158d3b226dd08796a1e"
-  integrity sha512-y5kTRqfcg82MW8K3cUgIS05OjCaKUznHWUOQYqhNcdtw2IvjuPeKY8ePGRFAsO69hFIcd1gywIeJ9xyXepeYKg==
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@figurl/timeseries-views/-/timeseries-views-0.1.4.tgz#c6122a03c58f15513086ada41a7b45cf0246ff2e"
+  integrity sha512-FXRBpThXmzmlneA4eJllmkNqm//7zgmFHc/dVWhyAqJASwjCRmUMh9rYHwQmil7iQiNE9sh6c+2wCQE6Vwt6LA==
   dependencies:
     "@figurl/core-views" "^0.1"
     "@figurl/interface" "^0.1"

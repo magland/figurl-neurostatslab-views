@@ -1,7 +1,7 @@
 import { Splitter } from "@figurl/core-views";
 import { getFileData, storeFileData, useUrlState } from "@figurl/interface";
+import { JSONStringifyDeterministic } from "@figurl/interface/dist/viewInterface/kacheryTypes";
 import { FunctionComponent, useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { JSONStringifyDeterministic } from "../view-annotate-gerbil-posture/AnnotateGerbilPostureView";
 import ControlPanel from "./ControlPanel";
 import SpectrogramsWidget from "./SpectrogramsWidget";
 import { TestSpectrogramsViewData } from "./TestSpectrogramsViewData";
