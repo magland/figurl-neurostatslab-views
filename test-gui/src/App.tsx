@@ -7,6 +7,7 @@ import theme from './theme';
 import View from './View';
 import { defaultRecordingSelection, RecordingSelectionContext, recordingSelectionReducer, SetupAnnotations } from '@figurl/timeseries-views';
 import { defaultUnitSelection, UnitSelectionContext, unitSelectionReducer } from '@figurl/spike-sorting-views';
+import { SetupVocalizations } from './package/context-vocalizations';
 
 const urlSearchParams = new URLSearchParams(window.location.search)
 const queryParams = Object.fromEntries(urlSearchParams.entries())
@@ -68,12 +69,14 @@ function App() {
         <UnitSelectionContext.Provider value={{unitSelection, unitSelectionDispatch}}>
           <SetupAnnotations>
             <SetupUrlState>
-              <View
-                data={data}
-                opts={opts}
-                width={width - 10}
-                height={height - 5}
-              />
+              <SetupVocalizations>
+                <View
+                  data={data}
+                  opts={opts}
+                  width={width - 10}
+                  height={height - 5}
+                />
+              </SetupVocalizations>
             </SetupUrlState>
           </SetupAnnotations>
         </UnitSelectionContext.Provider>

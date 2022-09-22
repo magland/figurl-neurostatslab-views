@@ -34,7 +34,7 @@ const SpectrogramWidget: FunctionComponent<Props> = ({width, height, spectrogram
 		if (visibleTimeEndSeconds === undefined) return undefined
 		let i1 = Math.floor(visibleTimeStartSeconds * samplingFrequency) - 1
 		let i2 = Math.floor(visibleTimeEndSeconds * samplingFrequency) + 1
-		const downsampleFactor = Math.max(1, Math.floor((i2 - i1) / (panelWidth * 2)))
+		const downsampleFactor = Math.max(1, Math.floor((i2 - i1) / (panelWidth)))
 		i1 = Math.floor(i1 / downsampleFactor) * downsampleFactor
 		i2 = Math.ceil(i2 / downsampleFactor) * downsampleFactor
 		let nT = i2 - i1
