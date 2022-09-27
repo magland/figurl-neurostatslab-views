@@ -1,6 +1,5 @@
 # 9/21/22
-# https://www.figurl.org/f?v=http://localhost:3000&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&label=test%20annotate%20vocalizations&s={%22annotations%22:%22sha1://eb59c3afaab11ef4776186d5b0408ba41b21f87f%22}
-# https://www.figurl.org/f?v=gs://figurl/neurostatslab-views-1dev2&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&label=test%20annotate%20vocalizations&s={%22annotations%22:%22sha1://eb59c3afaab11ef4776186d5b0408ba41b21f87f%22}
+# https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev3&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&s={"vocalizations":"sha1://f57a978784abf6d52caa13f75eab7b9caa1cfdc3"}&label=test%20annotate%20vocalizations
 
 import numpy as np
 import kachery_cloud as kcl
