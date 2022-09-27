@@ -37,6 +37,7 @@
     "@figurl/timeseries-views": "^0.1",
     "@types/node": "^18.7.18",
     "assert": "npm:assert-browserify",
+    "axios": "^0.27.2",
     "buffer": "npm:buffer-browserify",
     "crypto": "npm:crypto-browserify",
     "github-markdown-css": "^5.1.0",

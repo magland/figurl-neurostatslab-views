@@ -54,7 +54,22 @@ def main():
             'samplingFrequency': sr_spectrogram
         }
     }
-    F = fig.Figure(data=data, view_url='http://localhost:3000')
+    vocalizations_state = {
+        'vocalizations': [
+            {'vocalizationId': 'auto-1', 'timeIntervalSec': [0.1, 0.2], 'label': 'auto'},
+            {'vocalizationId': 'auto-2', 'timeIntervalSec': [0.3, 0.4], 'label': 'auto'},
+            {'vocalizationId': 'auto-3', 'timeIntervalSec': [0.5, 0.6], 'label': 'auto'},
+            {'vocalizationId': 'auto-4', 'timeIntervalSec': [0.7, 0.8], 'label': 'auto'},
+            {'vocalizationId': 'auto-5', 'timeIntervalSec': [0.9, 1.0], 'label': 'auto'},
+            {'vocalizationId': 'auto-6', 'timeIntervalSec': [1.1, 1.2], 'label': 'auto'},
+            {'vocalizationId': 'auto-7', 'timeIntervalSec': [1.3, 1.5], 'label': 'auto'}
+        ]
+    }
+    vocalizations_state_uri = kcl.store_json(vocalizations_state)
+    state = {
+        'vocalizations': vocalizations_state_uri
+    }
+    F = fig.Figure(data=data, view_url='gs://figurl/neurostatslab-views-1dev3', state=state)
     print(F.url(label='test annotate vocalizations'))     
 
 def get_frame(stream: cv2.VideoCapture, frame_idx: int):

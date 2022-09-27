@@ -1,6 +1,7 @@
 import { Splitter } from '@figurl/core-views';
 import { FunctionComponent } from 'react';
 import CurrentVocalizationControl from './CurrentVocalizationControl';
+import SaveControl from './SaveControl';
 import VocalizationsTable from './VocalizationsTable';
 
 type Props = {
@@ -57,7 +58,7 @@ const ControlWidget: FunctionComponent<Props> = ({width, height}) => {
                     width={0}
                     height={0}
                 />
-                <div />
+                <SaveControl />
             </Splitter>
         </Splitter>
         // <div style={{margin: 20}}>
