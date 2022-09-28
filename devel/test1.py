@@ -12,7 +12,10 @@ import kachery_cloud as kcl
 
 
 def main():
-    vid_fpath = kcl.load_file('sha1://a9fc5dc257e9a5c2e0af51114446bd39a44b8de0?label=2022_01_17_13_59_02_792530_cam_a.avi')
+    # ffmpeg -i test1.mp4 -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 test1.ogv
+
+    # vid_fpath = kcl.load_file('sha1://a9fc5dc257e9a5c2e0af51114446bd39a44b8de0?label=2022_01_17_13_59_02_792530_cam_a.avi')
+    vid_fpath = kcl.load_file('sha1://54c5a68707779d3e920c70443bced94250154af1?label=2022_01_17_13_59_02_792530_cam_a.ogv')
     if not path.exists(vid_fpath) or path.isdir(vid_fpath):
         raise ValueError("Expected a path to an existing video file.")
     cap = cv2.VideoCapture(vid_fpath)

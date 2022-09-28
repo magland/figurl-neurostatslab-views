@@ -1,5 +1,6 @@
 import { Splitter } from '@figurl/core-views';
 import { FunctionComponent } from 'react';
+import CameraView from './CameraView';
 import CurrentVocalizationControl from './CurrentVocalizationControl';
 import SaveControl from './SaveControl';
 import VocalizationsTable from './VocalizationsTable';
@@ -58,7 +59,17 @@ const ControlWidget: FunctionComponent<Props> = ({width, height}) => {
                     width={0}
                     height={0}
                 />
-                <SaveControl />
+                <Splitter
+                    width={0}
+                    height={0}
+                    initialPosition={300}
+                >
+                    <SaveControl />
+                    <CameraView
+                        width={0}
+                        height={0}
+                    />
+                </Splitter>
             </Splitter>
         </Splitter>
         // <div style={{margin: 20}}>
