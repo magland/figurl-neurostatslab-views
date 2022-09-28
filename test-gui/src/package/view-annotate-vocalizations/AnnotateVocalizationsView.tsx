@@ -1,5 +1,5 @@
 import { Splitter } from "@figurl/core-views";
-import { AnnotationContext } from "@figurl/timeseries-views";
+import { AnnotationContext, useTimeFocus } from "@figurl/timeseries-views";
 import { FunctionComponent, useContext, useEffect } from "react";
 import { useVocalizations } from "../context-vocalizations";
 import { AnnotateVocalizationsViewData } from "./AnnotateVocalizationsViewData";
@@ -14,7 +14,8 @@ type Props ={
 
 const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, height}) => {
 	const {spectrogram} = data
-	const {vocalizations} = useVocalizations()
+	const {vocalizations, setSelectedVocalizationId} = useVocalizations()
+	const {focusTime} = useTimeFocus()
 	const {annotationDispatch} = useContext(AnnotationContext)
 	useEffect(() => {
 		if (!annotationDispatch) return
@@ -24,12 +25,24 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 				annotations: vocalizations.map(v => ({
 					type: 'time-interval',
 					annotationId: v.vocalizationId,
-					label: v.label,
-					timeIntervalSec: v.timeIntervalSec
+					label: '',
+					timeIntervalSec: v.timeIntervalSec,
+					fillColor: v.labels.includes('accept') ? 'rgb(180, 255, 180)' : 'rgb(245, 240, 200)'
 				}))
 			}
 		})
 	}, [vocalizations, annotationDispatch])
+	useEffect(() => {
+		// when focus time changes, set vocalization ID
+		if (focusTime === undefined) return
+		for (let v of vocalizations) {
+			const a = v.timeIntervalSec
+			if ((a[0] <= focusTime) && (focusTime <= a[1])) {
+				setSelectedVocalizationId(v.vocalizationId)
+				return
+			}
+		}
+	}, [focusTime, vocalizations, setSelectedVocalizationId])
 	return (
 		<Splitter
 			width={width}

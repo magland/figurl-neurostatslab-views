@@ -1,10 +1,11 @@
 import { randomAlphaString } from "@figurl/core-utils"
+import { useTimeFocus } from "@figurl/timeseries-views"
 import React, { useCallback, useContext, useMemo } from "react"
 import VocalizationAction from "./VocalizationAction"
 
 export type Vocalization = {
     vocalizationId: string
-    label: string
+    labels: string[]
     timeIntervalSec: [number, number]
 }
 
@@ -40,7 +41,33 @@ export const vocalizationReducer = (s: VocalizationState, a: VocalizationAction)
             ...a.vocalizationState
         }
     }
+    else if (a.type === 'addVocalizationLabel') {
+        return {
+            ...s,
+            vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId ? (addLabel(v, a.label)) : v))
+        }
+    }
+    else if (a.type === 'removeVocalizationLabel') {
+        return {
+            ...s,
+            vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId ? (removeLabel(v, a.label)) : v))
+        }
+    }
     else return s
+}
+
+const addLabel = (v: Vocalization, label: string): Vocalization => {
+    return {
+        ...v,
+        labels: v.labels.includes(label) ? v.labels : [...v.labels, label].sort()
+    }
+}
+
+const removeLabel = (v: Vocalization, label: string): Vocalization => {
+    return {
+        ...v,
+        labels: v.labels.filter(x => (x !== label))
+    }
 }
 
 const sortVocalizations = (x: Vocalization[]) => {
@@ -76,6 +103,7 @@ const VocalizationContext = React.createContext<{
 
 export const useVocalizations = () => {
     const {vocalizationState, vocalizationDispatch, vocalizationSelection, vocalizationSelectionDispatch} = useContext(VocalizationContext)
+    const {setTimeFocus} = useTimeFocus()
     const addVocalization = useCallback((vocalization: Vocalization) => {
         if (!vocalization.vocalizationId) {
             vocalization.vocalizationId = randomAlphaString(10)
@@ -102,22 +130,50 @@ export const useVocalizations = () => {
         vocalizationState?.vocalizations || []
     ), [vocalizationState])
     const selectedVocalization: Vocalization | undefined = useMemo(() => (
-        vocalizations.filter(v => (v.vocalizationId === vocalizationSelection?.selectedVocalizationId))[0]
+        vocalizations.filter(v => (v.vocalizationId === vocalizationSelection?.selectedVocalizationId))[0] as (Vocalization | undefined)
     ), [vocalizations, vocalizationSelection?.selectedVocalizationId])
     const setSelectedVocalizationId = useCallback((id: string | undefined) => {
         vocalizationSelectionDispatch && vocalizationSelectionDispatch({
             type: 'setSelectedVocalization',
             vocalizationId: id
         })
-    }, [vocalizationSelectionDispatch])
+        const sv = vocalizations.find(v => (v.vocalizationId === id))
+        if (sv) {
+            setTimeFocus(sv.timeIntervalSec[0], {autoScrollVisibleTimeRange: true})
+        }
+    }, [vocalizationSelectionDispatch, setTimeFocus, vocalizations])
+    const selectPreviousVocalization = useCallback(() => {
+        if (!selectedVocalization) return
+        const i = vocalizations.map(v => (v.vocalizationId)).indexOf(selectedVocalization.vocalizationId)
+        if (i < 0) return
+        if (i - 1 < 0) return
+        setSelectedVocalizationId(vocalizations[i - 1].vocalizationId)
+	}, [selectedVocalization, vocalizations, setSelectedVocalizationId])
+	const selectNextVocalization = useCallback(() => {
+		if (!selectedVocalization) return
+        const i = vocalizations.map(v => (v.vocalizationId)).indexOf(selectedVocalization.vocalizationId)
+        if (i < 0) return
+        if (i + 1 >= vocalizations.length) return
+        setSelectedVocalizationId(vocalizations[i + 1].vocalizationId)
+	}, [selectedVocalization, vocalizations, setSelectedVocalizationId])
+    const addVocalizationLabel = useCallback((vocalizationId: string, label: string) => {
+        vocalizationDispatch && vocalizationDispatch({type: 'addVocalizationLabel', vocalizationId, label})
+    }, [vocalizationDispatch])
+    const removeVocalizationLabel = useCallback((vocalizationId: string, label: string) => {
+        vocalizationDispatch && vocalizationDispatch({type: 'removeVocalizationLabel', vocalizationId, label})
+    }, [vocalizationDispatch])
     return useMemo(() => ({
         vocalizations,
         addVocalization,
         removeVocalization,
         setVocalizationLabel,
         selectedVocalization,
-        setSelectedVocalizationId
-    }), [vocalizations, addVocalization, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId])
+        setSelectedVocalizationId,
+        selectPreviousVocalization,
+        selectNextVocalization,
+        addVocalizationLabel,
+        removeVocalizationLabel
+    }), [vocalizations, addVocalization, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel])
 }
 
 export default VocalizationContext

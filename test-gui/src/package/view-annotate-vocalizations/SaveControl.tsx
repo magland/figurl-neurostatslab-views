@@ -1,4 +1,3 @@
-import { randomAlphaString } from "@figurl/core-utils";
 import { getFileData, storeFileData, useUrlState } from "@figurl/interface";
 import { Button } from "@material-ui/core";
 import { FunctionComponent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -12,7 +11,6 @@ type Props ={
 const SaveControl: FunctionComponent<Props> = () => {
 	const {urlState, updateUrlState} = useUrlState()
 	const [saving, setSaving] = useState<boolean>(false)
-	const [mutableName, setMutableName] = useState<string>('')
 	const {vocalizationState, vocalizationDispatch} = useContext(VocalizationContext)
 	const uri = useMemo(() => (urlState['vocalizations']), [urlState])
 	const {vocalizations} = useVocalizations()
@@ -30,40 +28,6 @@ const SaveControl: FunctionComponent<Props> = () => {
 			}
 		})()
 	}, [updateUrlState, vocalizationState])
-	const handleSaveNewMutable = useCallback(() => {
-		if (!vocalizationState) return
-		const x = JSONStringifyDeterministic(vocalizationState)
-		setSaving(true)
-		const name = 'vocalizations-' + randomAlphaString(10)
-		;(async () => {
-			try {
-				const uri = await storeFileData(x, {putlyKey: name})
-				if (!uri) throw Error('Unable to store file data')
-				updateUrlState({vocalizations: uri})
-				setMutableName(name)
-			}
-			finally {
-				setSaving(false)
-			}
-		})()
-	}, [updateUrlState, vocalizationState])
-	const handleOverwriteMutable = useCallback(() => {
-		if (!vocalizationState) return
-		if (!mutableName) return
-		const x = JSONStringifyDeterministic(vocalizationState)
-		setSaving(true)
-		const name = mutableName
-		;(async () => {
-			try {
-				const uri = await storeFileData(x, {putlyKey: name})
-				if (!uri) throw Error('Unable to store file data')
-				updateUrlState({vocalizations: uri})
-			}
-			finally {
-				setSaving(false)
-			}
-		})()
-	}, [updateUrlState, vocalizationState, mutableName])
 
 	///////////////////////////////////////////////////////////////
 	const first = useRef<boolean>(true)
@@ -71,10 +35,6 @@ const SaveControl: FunctionComponent<Props> = () => {
 		if (!first.current) return
 		if (!vocalizationDispatch) return
 		const uri = (urlState.vocalizations || '') as string
-		const prefix = 'putly://'
-		if (uri.startsWith(prefix)) {
-			setMutableName(uri.slice(prefix.length))
-		}
 		if (uri) {
 			getFileData(uri, () => {}).then((x) => {
 				if (!x) {
@@ -96,13 +56,7 @@ const SaveControl: FunctionComponent<Props> = () => {
 			<p>{vocalizations.length} vocalizations</p>
 			<p>URI: {uri}</p>
 			<div>
-				<Button disabled={saving} onClick={handleSaveSnapshot}>Save as snapshot</Button>
-			</div>
-			<div>
-				<Button disabled={saving} onClick={handleSaveNewMutable}>Save as new rewritable file</Button>
-			</div>
-			<div>
-				<Button disabled={saving || (!mutableName)} onClick={handleOverwriteMutable}>Overwrite</Button> ({mutableName})
+				<Button disabled={saving} onClick={handleSaveSnapshot}>Save snapshot</Button>
 			</div>
 		</div>
 	)

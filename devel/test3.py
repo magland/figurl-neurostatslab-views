@@ -1,6 +1,10 @@
-# 9/21/22
-# https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev3&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&s={"vocalizations":"sha1://f57a978784abf6d52caa13f75eab7b9caa1cfdc3"}&label=test%20annotate%20vocalizations
+# 9/28/22
+# https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev4&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&s={"vocalizations":"sha1://3a5cc9fc99cd72ae025faceb24845adb98a62e65"}&label=test%20annotate%20vocalizations
 
+# dev
+# https://figurl.org/f?v=http://localhost:3000&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&s={"vocalizations":"sha1://3a5cc9fc99cd72ae025faceb24845adb98a62e65"}&label=test%20annotate%20vocalizations
+
+from typing import Union
 import numpy as np
 import kachery_cloud as kcl
 import h5py
@@ -45,7 +49,12 @@ def main():
     maxval = np.max(spectrogram_data)
     maxval = maxval / 200
     minval = 0
+
+    # Nf x Nt
     spectrogram_data = np.floor((spectrogram_data - minval) / (maxval - minval) * 255).astype(np.uint8)
+
+    auto_vocalizations = _auto_detect_vocalizations(spectrogram_data[130:230], sampling_frequency=sr_spectrogram)
+
     data = {
         'type': 'neurostatslab.AnnotateVocalizations',
         'spectrogram': {
@@ -53,23 +62,59 @@ def main():
             'samplingFrequency': sr_spectrogram
         }
     }
+    labels = ['auto']
     vocalizations_state = {
-        'vocalizations': [
-            {'vocalizationId': 'auto-1', 'timeIntervalSec': [0.1, 0.2], 'label': 'auto'},
-            {'vocalizationId': 'auto-2', 'timeIntervalSec': [0.3, 0.4], 'label': 'auto'},
-            {'vocalizationId': 'auto-3', 'timeIntervalSec': [0.5, 0.6], 'label': 'auto'},
-            {'vocalizationId': 'auto-4', 'timeIntervalSec': [0.7, 0.8], 'label': 'auto'},
-            {'vocalizationId': 'auto-5', 'timeIntervalSec': [0.9, 1.0], 'label': 'auto'},
-            {'vocalizationId': 'auto-6', 'timeIntervalSec': [1.1, 1.2], 'label': 'auto'},
-            {'vocalizationId': 'auto-7', 'timeIntervalSec': [1.3, 1.5], 'label': 'auto'}
-        ]
+        'vocalizations': auto_vocalizations
     }
     vocalizations_state_uri = kcl.store_json(vocalizations_state)
     state = {
         'vocalizations': vocalizations_state_uri
     }
-    F = fig.Figure(data=data, view_url='gs://figurl/neurostatslab-views-1dev3', state=state)
-    print(F.url(label='test annotate vocalizations'))     
+    F = fig.Figure(data=data, view_url='gs://figurl/neurostatslab-views-1dev4', state=state)
+    print(F.url(label='test annotate vocalizations'))
+
+def _auto_detect_vocalizations(spectrogram: np.array, *, sampling_frequency: float):
+    vocalizations = []
+    max_gap = 20
+    min_size = 10
+    voc_ind = 0
+    a = np.max(spectrogram, axis=0)
+    vocalization_start_frame: Union[int, None] = None
+    vocalization_last_active_frame: Union[int, None] = None
+    for i in range(len(a)):
+        if a[i] > 0:
+            # non-zero value
+            if vocalization_start_frame is None:
+                # not in a potential vocalization
+                vocalization_start_frame = i
+            vocalization_last_active_frame = i
+        else:
+            # zero value
+            if vocalization_last_active_frame is not None:
+                # in a potential vocalization
+                if i - vocalization_last_active_frame >= max_gap:
+                    # it's been long enough since we had a non-zero value
+                    if vocalization_last_active_frame - vocalization_start_frame >= min_size:
+                        # the vocalization was long enough
+                        vocalizations.append(
+                            {'vocalizationId': f'auto-{voc_ind}', 'timeIntervalSec': [vocalization_start_frame / sampling_frequency, (vocalization_last_active_frame + 1) / sampling_frequency], 'labels': ['auto']}
+                        )
+                        voc_ind = voc_ind + 1
+                    vocalization_start_frame = None
+                    vocalization_last_active_frame = None
+    return vocalizations
+
+
+    raise Exception('Error')
+    # [
+    #         {'vocalizationId': 'auto-1', 'timeIntervalSec': [0.1, 0.2], 'labels': labels},
+    #         {'vocalizationId': 'auto-2', 'timeIntervalSec': [0.3, 0.4], 'labels': labels},
+    #         {'vocalizationId': 'auto-3', 'timeIntervalSec': [0.5, 0.6], 'labels': labels},
+    #         {'vocalizationId': 'auto-4', 'timeIntervalSec': [0.7, 0.8], 'labels': labels},
+    #         {'vocalizationId': 'auto-5', 'timeIntervalSec': [0.9, 1.0], 'labels': labels},
+    #         {'vocalizationId': 'auto-6', 'timeIntervalSec': [1.1, 1.2], 'labels': labels},
+    #         {'vocalizationId': 'auto-7', 'timeIntervalSec': [1.3, 1.5], 'labels': labels}
+    #     ]
 
 def get_frame(stream: cv2.VideoCapture, frame_idx: int):
     """Seeks to a given frame ID and returns the corresponding frame
