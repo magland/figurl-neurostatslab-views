@@ -1,7 +1,6 @@
 import { Hyperlink, NiceTable, NiceTableColumn, NiceTableRow } from "@figurl/core-views";
-import { FunctionComponent, useCallback, useMemo } from "react";
+import { FunctionComponent, useMemo } from "react";
 import { useVocalizations } from "../context-vocalizations";
-import EditableTextField from "./EditableTextField";
 
 type Props ={
 	width: number
@@ -20,7 +19,7 @@ const columns: NiceTableColumn[] = [
 ]
 
 const VocalizationsTable: FunctionComponent<Props> = ({width, height}) => {
-	const {vocalizations, setVocalizationLabel, removeVocalization, selectedVocalization, setSelectedVocalizationId} = useVocalizations()
+	const {vocalizations, selectedVocalization, setSelectedVocalizationId} = useVocalizations()
 	const rows: NiceTableRow[] = useMemo(() => {
         return vocalizations.map((x, i) => {
 			const handleClick = () => {
@@ -30,7 +29,8 @@ const VocalizationsTable: FunctionComponent<Props> = ({width, height}) => {
                 key: x.vocalizationId,
                 columnValues: {
                     labels: {
-                        element: <EditableTextField onChange={newLabel => setVocalizationLabel(x.vocalizationId, newLabel)} value={x.labels.join(', ')} />
+                        text: x.labels.join(', ')
+                        // element: <EditableTextField onChange={newLabel => setVocalizationLabel(x.vocalizationId, newLabel)} value={x.labels.join(', ')} />
                     },
                     interval: {
 						// element: <Hyperlink onClick={() => recordingSelectionDispatch({type: 'setFocusTimeInterval', focusTimeIntervalSec: x.timeIntervalSec, autoScrollVisibleTimeRange: true})}>{formatTimeInterval(x.timeIntervalSec)}</Hyperlink>
@@ -39,10 +39,10 @@ const VocalizationsTable: FunctionComponent<Props> = ({width, height}) => {
                 }
             }
         })
-    }, [vocalizations, setVocalizationLabel, setSelectedVocalizationId])
-	const handleDelete = useCallback((vocalizationId: string) => {
-        removeVocalization(vocalizationId)
-    }, [removeVocalization])
+    }, [vocalizations, setSelectedVocalizationId])
+	// const handleDelete = useCallback((vocalizationId: string) => {
+    //     removeVocalization(vocalizationId)
+    // }, [removeVocalization])
 	const selectedVocalizationIds = useMemo(() => (
 		selectedVocalization ? [selectedVocalization.vocalizationId] : []
 	), [selectedVocalization])
@@ -51,7 +51,7 @@ const VocalizationsTable: FunctionComponent<Props> = ({width, height}) => {
 			<NiceTable
 				columns={columns}
 				rows={rows}
-				onDeleteRow={handleDelete}
+				// onDeleteRow={handleDelete}
 				selectedRowKeys={selectedVocalizationIds}
 				selectionMode="single"
 				onSelectedRowKeysChanged={(keys: string[]) => setSelectedVocalizationId(keys[0])}

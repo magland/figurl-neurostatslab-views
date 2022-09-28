@@ -2,7 +2,7 @@
 # https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev4&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&s={"vocalizations":"sha1://3a5cc9fc99cd72ae025faceb24845adb98a62e65"}&label=test%20annotate%20vocalizations
 
 # dev
-# https://figurl.org/f?v=http://localhost:3000&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&s={"vocalizations":"sha1://3a5cc9fc99cd72ae025faceb24845adb98a62e65"}&label=test%20annotate%20vocalizations
+# https://www.figurl.org/f?v=http://localhost:3000&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&s={%22vocalizations%22:%22sha1://70a06fcde9f961e0ca426406c8bf3e7243fbfb60%22}&label=test%20annotate%20vocalizations
 
 from typing import Union
 import numpy as np

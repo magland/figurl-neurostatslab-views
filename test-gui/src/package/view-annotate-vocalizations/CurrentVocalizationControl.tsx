@@ -12,7 +12,7 @@ type Props ={
 
 const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) => {
 	const {addVocalization, removeVocalization, addVocalizationLabel, removeVocalizationLabel, setSelectedVocalizationId, selectedVocalization, selectNextVocalization, selectPreviousVocalization} = useVocalizations()
-	const {focusTimeInterval} = useTimeFocus()
+	const {focusTimeInterval, focusTime} = useTimeFocus()
 	const handleAddVocalization = useCallback(() => {
 		if (!focusTimeInterval) return
 		const id = randomAlphaString(10)
@@ -64,7 +64,15 @@ const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) =
 			{
 				selectedVocalization ? (
 					<div>
-						<div>{selectedVocalization.vocalizationId}</div>
+						<div style={{padding: 5}}>
+							ID: {selectedVocalization.vocalizationId}
+						</div>
+						<div style={{padding: 5}}>
+							Time (sec): {formatTimeInterval(selectedVocalization.timeIntervalSec)}
+						</div>
+						<div style={{padding: 5}}>
+							Labels: {selectedVocalization.labels.join(', ')}
+						</div>
 						<div>
 							<Button disabled={selectedVocalization.labels.includes('accept')} onClick={handleAcceptVocalization}>Accept</Button>
 							<Button disabled={!selectedVocalization.labels.includes('accept')} onClick={handleUnacceptVocalization}>Unaccept</Button>
@@ -77,6 +85,14 @@ const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) =
 					</div>
 				) : (
 					<div>None selected</div>
+				)
+			}
+			<hr />
+			{
+				focusTime !== undefined && (
+					<div style={{padding: 5}}>
+						Time (sec): {focusTime.toFixed(7)}
+					</div>
 				)
 			}
 		</div>

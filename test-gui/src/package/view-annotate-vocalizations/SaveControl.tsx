@@ -14,6 +14,7 @@ const SaveControl: FunctionComponent<Props> = () => {
 	const {vocalizationState, vocalizationDispatch} = useContext(VocalizationContext)
 	const uri = useMemo(() => (urlState['vocalizations']), [urlState])
 	const {vocalizations} = useVocalizations()
+	const acceptedVocalizations = useMemo(() => (vocalizations.filter(v => (v.labels.includes('accept')))), [vocalizations])
 	const handleSaveSnapshot = useCallback(() => {
 		if (!vocalizationState) return
 		const x = JSONStringifyDeterministic(vocalizationState)
@@ -53,7 +54,7 @@ const SaveControl: FunctionComponent<Props> = () => {
 	return (
 		<div>
 			<h3>Save vocalization annotations</h3>
-			<p>{vocalizations.length} vocalizations</p>
+			<p>{vocalizations.length} vocalizations ({acceptedVocalizations.length} accepted)</p>
 			<p>URI: {uri}</p>
 			<div>
 				<Button disabled={saving} onClick={handleSaveSnapshot}>Save snapshot</Button>

@@ -27,7 +27,8 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 					annotationId: v.vocalizationId,
 					label: '',
 					timeIntervalSec: v.timeIntervalSec,
-					fillColor: v.labels.includes('accept') ? 'rgb(180, 255, 180)' : 'rgb(245, 240, 200)'
+					fillColor: v.labels.includes('accept') ? 'rgb(180, 255, 180)' : 'rgb(245, 240, 200)',
+					strokeColor: v.labels.includes('accept') ? 'rgb(150, 255, 150)' : 'rgb(235, 230, 200)'
 				}))
 			}
 		})
