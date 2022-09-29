@@ -16,7 +16,8 @@ const SaveControl: FunctionComponent<Props> = ({videoSamplingFrequency}) => {
 	const [saving, setSaving] = useState<boolean>(false)
 	const {vocalizationState, vocalizationDispatch} = useContext(VocalizationContext)
 	const {poseState, poseDispatch} = useContext(PoseContext)
-	const uri = useMemo(() => (urlState['vocalizations']), [urlState])
+	const vocalizationsUri = useMemo(() => (urlState['vocalizations']), [urlState])
+	const posesUri = useMemo(() => (urlState['poses']), [urlState])
 	const {vocalizations} = useVocalizations()
 	const {poses} = usePoses(videoSamplingFrequency)
 	const acceptedVocalizations = useMemo(() => (vocalizations.filter(v => (v.labels.includes('accept')))), [vocalizations])
@@ -93,13 +94,13 @@ const SaveControl: FunctionComponent<Props> = ({videoSamplingFrequency}) => {
 		<div>
 			<h3>Save vocalizations</h3>
 			<p>{vocalizations.length} vocalizations ({acceptedVocalizations.length} accepted)</p>
-			<p>URI: {uri}</p>
+			<p>URI: {vocalizationsUri}</p>
 			<div>
 				<Button disabled={saving} onClick={handleSaveVocalizations}>Save vocalizations snapshot</Button>
 			</div>
 			<h3>Save poses</h3>
 			<p>{poses.length} poses</p>
-			<p>URI: {uri}</p>
+			<p>URI: {posesUri}</p>
 			<div>
 				<Button disabled={saving} onClick={handleSavePoses}>Save poses snapshot</Button>
 			</div>
