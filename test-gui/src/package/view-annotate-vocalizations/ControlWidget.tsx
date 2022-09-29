@@ -1,44 +1,41 @@
 import { Splitter } from '@figurl/core-views';
-import { FunctionComponent } from 'react';
+import { useTimeFocus } from '@figurl/timeseries-views';
+import { FunctionComponent, useMemo } from 'react';
+import { useVocalizations } from '../context-vocalizations';
 import CameraView from './CameraView';
 import CurrentVocalizationControl from './CurrentVocalizationControl';
+import PosesTable from './PosesTable';
 import SaveControl from './SaveControl';
 import VocalizationsTable from './VocalizationsTable';
 
 type Props = {
     width: number
     height: number
+    video?: {
+		uri: string,
+		width: number
+		height: number
+		samplingFrequency: number
+	}
+    samplingFrequencies: {audio: number, video: number}
 }
 
-const ControlWidget: FunctionComponent<Props> = ({width, height}) => {
-    // const {recordingSelection} = useRecordingSelection()
-    // const {focusTimeIntervalSeconds} = recordingSelection
-    // const {vocalizations, addVocalization, removeVocalization} = useVocalizations()
-    // const [, setSaveEnabled] = useState(true)
-
-    // const handleAddTimeInterval = useCallback(() => {
-    //     focusTimeIntervalSeconds !== undefined && addVocalization({vocalizationId: '', label: ``, timeIntervalSec: focusTimeIntervalSeconds})
-    // }, [focusTimeIntervalSeconds, addVocalization])
-
-    // const handleDelete = useCallback((vocalizationId: string) => {
-    //     removeVocalization(vocalizationId)
-    // }, [removeVocalization])
-
-    // const {updateUrlState} = useUrlState()
-
-    // const handleSave = useCallback(() => {
-    //     const savedTimesJson = JSONStringifyDeterministic({vocalizations})
-    //     setSaveEnabled(false)
-    //     storeFileData(savedTimesJson).then((uri) => {
-    //         setSaveEnabled(true)
-    //         updateUrlState({vocalizations: uri})
-    //     }).catch((err: Error) => {
-    //         console.warn(err)
-    //         alert(`Problem saving vocalizations: ${err.message}`)
-    //     }).finally(() => {
-    //         setSaveEnabled(true)
-    //     })
-    // }, [vocalizations, updateUrlState])
+const ControlWidget: FunctionComponent<Props> = ({width, height, video, samplingFrequencies}) => {
+    const {focusTime} = useTimeFocus()
+    const {selectedVocalization, vocalizationState} = useVocalizations()
+    const canEditPose = useMemo(() => {
+        if (!selectedVocalization) return false
+        if (!vocalizationState) return false
+        if (!video) return false
+        if (focusTime === undefined) return false
+        const vocalizationStartTime = selectedVocalization.startFrame / vocalizationState.samplingFrequency
+        const focusVideoFrame = Math.floor(focusTime * video.samplingFrequency)
+        const vocalizationStartVideoFrame = Math.floor(vocalizationStartTime * video.samplingFrequency)
+        if (focusVideoFrame === vocalizationStartVideoFrame) {
+            return true
+        }
+        return false
+    }, [focusTime, selectedVocalization, video, vocalizationState])
 
     return (
         <Splitter
@@ -64,11 +61,30 @@ const ControlWidget: FunctionComponent<Props> = ({width, height}) => {
                     height={0}
                     initialPosition={300}
                 >
-                    <SaveControl />
-                    <CameraView
+                    <SaveControl
+                        videoSamplingFrequency={samplingFrequencies.video}
+                    />
+                    <Splitter
                         width={0}
                         height={0}
-                    />
+                        initialPosition={300}
+                    >
+                        <PosesTable
+                            width={0}
+                            height={0}
+                            samplingFrequencies={samplingFrequencies}
+                        />
+                        {
+                            video ? (
+                                <CameraView
+                                    width={0}
+                                    height={0}
+                                    video={video}
+                                    canEditPose={canEditPose}
+                                />
+                            ) : <div />
+                        }
+                    </Splitter>
                 </Splitter>
             </Splitter>
         </Splitter>

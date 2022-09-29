@@ -1,8 +1,8 @@
-# 9/28/22
-# https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev4&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&s={"vocalizations":"sha1://3a5cc9fc99cd72ae025faceb24845adb98a62e65"}&label=test%20annotate%20vocalizations
+# 9/29/22
+# https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev5&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={"vocalizations":"sha1://fad5a8231dc33a6cb6495007e466d104e03edb33"}&label=test%20annotate%20vocalizations
 
 # dev
-# https://www.figurl.org/f?v=http://localhost:3000&d=sha1://257658d506da14071978fed607381aceb4ba6fb3&s={%22vocalizations%22:%22sha1://70a06fcde9f961e0ca426406c8bf3e7243fbfb60%22}&label=test%20annotate%20vocalizations
+# https://www.figurl.org/f?v=http://localhost:3000&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={%22vocalizations%22:%22sha1://fad5a8231dc33a6cb6495007e466d104e03edb33%22,%22poses%22:%22sha1://f213f711d0d96af2a41d95b239c802222afa7185%22}&label=test%20annotate%20vocalizations
 
 from typing import Union
 import numpy as np
@@ -15,6 +15,11 @@ from matplotlib.pyplot import specgram
 import cv2
 
 def main():
+    # ffmpeg -i test1.mp4 -c:v libtheora -q:v 7 -c:a libvorbis -q:a 4 test1.ogv
+    video_uri = 'sha1://54c5a68707779d3e920c70443bced94250154af1?label=2022_01_17_13_59_02_792530_cam_a.ogv'
+    video_dims = [512, 640]
+    sr_video = 30
+
     fname_h5 = kcl.load_file('sha1://149e7e83682c3e0fbbef4dbb9153f469430464cb?label=mic_2022_01_17_13_59_02_792530.h5')
     sr_audio = 125000 #sampling rate, audio
     duration_sec = 60 * 5
@@ -60,17 +65,24 @@ def main():
         'spectrogram': {
             'data': spectrogram_data.T,
             'samplingFrequency': sr_spectrogram
+        },
+        'video': {
+            'uri': video_uri,
+            'samplingFrequency': sr_video,
+            'width': video_dims[1],
+            'height': video_dims[0]
         }
     }
     labels = ['auto']
     vocalizations_state = {
+        'samplingFrequency': sr_spectrogram,
         'vocalizations': auto_vocalizations
     }
     vocalizations_state_uri = kcl.store_json(vocalizations_state)
     state = {
         'vocalizations': vocalizations_state_uri
     }
-    F = fig.Figure(data=data, view_url='gs://figurl/neurostatslab-views-1dev4', state=state)
+    F = fig.Figure(data=data, view_url='gs://figurl/neurostatslab-views-1dev5', state=state)
     print(F.url(label='test annotate vocalizations'))
 
 def _auto_detect_vocalizations(spectrogram: np.array, *, sampling_frequency: float):
@@ -97,7 +109,7 @@ def _auto_detect_vocalizations(spectrogram: np.array, *, sampling_frequency: flo
                     if vocalization_last_active_frame - vocalization_start_frame >= min_size:
                         # the vocalization was long enough
                         vocalizations.append(
-                            {'vocalizationId': f'auto-{voc_ind}', 'timeIntervalSec': [vocalization_start_frame / sampling_frequency, (vocalization_last_active_frame + 1) / sampling_frequency], 'labels': ['auto']}
+                            {'vocalizationId': f'auto-{voc_ind}', 'startFrame': vocalization_start_frame, 'endFrame': vocalization_last_active_frame + 1, 'labels': ['auto']}
                         )
                         voc_ind = voc_ind + 1
                     vocalization_start_frame = None

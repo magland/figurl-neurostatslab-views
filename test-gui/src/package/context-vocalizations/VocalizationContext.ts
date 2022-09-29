@@ -1,19 +1,23 @@
 import { randomAlphaString } from "@figurl/core-utils"
 import { useTimeFocus } from "@figurl/timeseries-views"
 import React, { useCallback, useContext, useMemo } from "react"
+import { timeIntervalForVocalization } from "../view-annotate-vocalizations/VocalizationsTable"
 import VocalizationAction from "./VocalizationAction"
 
 export type Vocalization = {
     vocalizationId: string
     labels: string[]
-    timeIntervalSec: [number, number]
+    startFrame: number
+    endFrame: number
 }
 
 export type VocalizationState = {
+    samplingFrequency: number
     vocalizations: Vocalization[]
 }
 
 export const defaultVocalizationState: VocalizationState = {
+    samplingFrequency: 1,
     vocalizations: []
 }
 
@@ -71,7 +75,7 @@ const removeLabel = (v: Vocalization, label: string): Vocalization => {
 }
 
 const sortVocalizations = (x: Vocalization[]) => {
-    return [...x].sort((a, b) => (a.timeIntervalSec[0] - b.timeIntervalSec[1]))
+    return [...x].sort((a, b) => (a.startFrame - b.startFrame))
 }
 
 export type VocalizationSelection = {
@@ -139,9 +143,12 @@ export const useVocalizations = () => {
         })
         const sv = vocalizations.find(v => (v.vocalizationId === id))
         if (sv) {
-            setTimeFocus(sv.timeIntervalSec[0], {autoScrollVisibleTimeRange: true})
+            const timeIntervalSec = timeIntervalForVocalization(vocalizationState, sv)
+            if (timeIntervalSec) {
+                setTimeFocus(timeIntervalSec[0], {autoScrollVisibleTimeRange: true})
+            }
         }
-    }, [vocalizationSelectionDispatch, setTimeFocus, vocalizations])
+    }, [vocalizationSelectionDispatch, vocalizationState, setTimeFocus, vocalizations])
     const selectPreviousVocalization = useCallback(() => {
         if (!selectedVocalization) return
         const i = vocalizations.map(v => (v.vocalizationId)).indexOf(selectedVocalization.vocalizationId)
@@ -163,6 +170,7 @@ export const useVocalizations = () => {
         vocalizationDispatch && vocalizationDispatch({type: 'removeVocalizationLabel', vocalizationId, label})
     }, [vocalizationDispatch])
     return useMemo(() => ({
+        vocalizationState,
         vocalizations,
         addVocalization,
         removeVocalization,
@@ -173,7 +181,7 @@ export const useVocalizations = () => {
         selectNextVocalization,
         addVocalizationLabel,
         removeVocalizationLabel
-    }), [vocalizations, addVocalization, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel])
+    }), [vocalizations, addVocalization, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizationState])
 }
 
 export default VocalizationContext

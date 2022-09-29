@@ -3,7 +3,7 @@ import { useTimeFocus } from "@figurl/timeseries-views";
 import { Button } from "@material-ui/core";
 import { FunctionComponent, useCallback, useMemo } from "react";
 import { useVocalizations } from "../context-vocalizations";
-import { formatTimeInterval } from './VocalizationsTable';
+import { formatTimeInterval, timeIntervalForVocalization } from './VocalizationsTable';
 
 type Props ={
 	width: number
@@ -11,27 +11,36 @@ type Props ={
 }
 
 const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) => {
-	const {addVocalization, removeVocalization, addVocalizationLabel, removeVocalizationLabel, setSelectedVocalizationId, selectedVocalization, selectNextVocalization, selectPreviousVocalization} = useVocalizations()
+	const {addVocalization, removeVocalization, addVocalizationLabel, removeVocalizationLabel, setSelectedVocalizationId, selectedVocalization, selectNextVocalization, selectPreviousVocalization, vocalizationState} = useVocalizations()
 	const {focusTimeInterval, focusTime} = useTimeFocus()
+	const focusFrameInterval = useMemo(() => {
+		if (!vocalizationState) return undefined
+		if (!focusTimeInterval) return undefined
+		return [
+			Math.floor(focusTimeInterval[0] * vocalizationState.samplingFrequency),
+			Math.ceil(focusTimeInterval[1] * vocalizationState.samplingFrequency)
+		]
+	}, [vocalizationState, focusTimeInterval])
 	const handleAddVocalization = useCallback(() => {
-		if (!focusTimeInterval) return
+		if (!focusFrameInterval) return
 		const id = randomAlphaString(10)
 		addVocalization({
 			vocalizationId: id,
 			labels: ['accept'],
-			timeIntervalSec: focusTimeInterval
+			startFrame: focusFrameInterval[0],
+			endFrame: focusFrameInterval[1]
 		})
 		setSelectedVocalizationId(id)
-	}, [focusTimeInterval, addVocalization, setSelectedVocalizationId])
+	}, [focusFrameInterval, addVocalization, setSelectedVocalizationId])
 	const addVocalizationEnabled = useMemo(() => {
-		if (!focusTimeInterval) return false
+		if (!focusFrameInterval) return false
 		if (selectedVocalization) {
-			if ((selectedVocalization.timeIntervalSec[0] === focusTimeInterval[0]) && (selectedVocalization.timeIntervalSec[1] === focusTimeInterval[1])) {
+			if ((selectedVocalization.startFrame === focusFrameInterval[0]) && (selectedVocalization.endFrame === focusFrameInterval[1])) {
 				return false
 			}
 		}
 		return true
-	}, [focusTimeInterval, selectedVocalization])
+	}, [focusFrameInterval, selectedVocalization])
 	const handleAcceptVocalization = useCallback(() => {
 		if (!selectedVocalization) return
 		addVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
@@ -68,7 +77,7 @@ const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) =
 							ID: {selectedVocalization.vocalizationId}
 						</div>
 						<div style={{padding: 5}}>
-							Time (sec): {formatTimeInterval(selectedVocalization.timeIntervalSec)}
+							Time (sec): {formatTimeInterval(timeIntervalForVocalization(vocalizationState, selectedVocalization))}
 						</div>
 						<div style={{padding: 5}}>
 							Labels: {selectedVocalization.labels.join(', ')}

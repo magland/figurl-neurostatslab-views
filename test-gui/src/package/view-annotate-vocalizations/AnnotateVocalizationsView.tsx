@@ -1,10 +1,11 @@
 import { Splitter } from "@figurl/core-views";
 import { AnnotationContext, useTimeFocus } from "@figurl/timeseries-views";
-import { FunctionComponent, useContext, useEffect } from "react";
+import { FunctionComponent, useContext, useEffect, useMemo } from "react";
 import { useVocalizations } from "../context-vocalizations";
 import { AnnotateVocalizationsViewData } from "./AnnotateVocalizationsViewData";
 import ControlWidget from "./ControlWidget";
 import SpectrogramWidget from "./SpectrogramWidget";
+import { timeIntervalForVocalization } from "./VocalizationsTable";
 
 type Props ={
 	data: AnnotateVocalizationsViewData
@@ -13,37 +14,46 @@ type Props ={
 }
 
 const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, height}) => {
-	const {spectrogram} = data
-	const {vocalizations, setSelectedVocalizationId} = useVocalizations()
+	const {spectrogram, video} = data
+	const {vocalizations, setSelectedVocalizationId, vocalizationState} = useVocalizations()
 	const {focusTime} = useTimeFocus()
 	const {annotationDispatch} = useContext(AnnotationContext)
+	const samplingFrequencies = useMemo(() => ({
+		audio: spectrogram.samplingFrequency,
+		video: video?.samplingFrequency || 1
+	}), [spectrogram, video])
 	useEffect(() => {
 		if (!annotationDispatch) return
 		annotationDispatch({
 			type: 'setAnnotationState',
 			annotationState: {
-				annotations: vocalizations.map(v => ({
-					type: 'time-interval',
-					annotationId: v.vocalizationId,
-					label: '',
-					timeIntervalSec: v.timeIntervalSec,
-					fillColor: v.labels.includes('accept') ? 'rgb(180, 255, 180)' : 'rgb(245, 240, 200)',
-					strokeColor: v.labels.includes('accept') ? 'rgb(150, 255, 150)' : 'rgb(235, 230, 200)'
-				}))
+				annotations: vocalizations.map(v => {
+					const timeIntervalSec = timeIntervalForVocalization(vocalizationState, v)
+					if (timeIntervalSec === undefined) throw Error('unexpected')
+					return {
+						type: 'time-interval',
+						annotationId: v.vocalizationId,
+						label: '',
+						timeIntervalSec,
+						fillColor: v.labels.includes('accept') ? 'rgb(180, 255, 180)' : 'rgb(245, 240, 200)',
+						strokeColor: v.labels.includes('accept') ? 'rgb(150, 255, 150)' : 'rgb(235, 230, 200)'
+					}
+				})
 			}
 		})
-	}, [vocalizations, annotationDispatch])
+	}, [vocalizations, annotationDispatch, vocalizationState])
 	useEffect(() => {
 		// when focus time changes, set vocalization ID
 		if (focusTime === undefined) return
+		if (vocalizationState === undefined) return
+		const focusFrame = Math.floor(focusTime * vocalizationState.samplingFrequency)
 		for (let v of vocalizations) {
-			const a = v.timeIntervalSec
-			if ((a[0] <= focusTime) && (focusTime <= a[1])) {
+			if ((v.startFrame <= focusFrame) && (focusFrame < v.endFrame)) {
 				setSelectedVocalizationId(v.vocalizationId)
 				return
 			}
 		}
-	}, [focusTime, vocalizations, setSelectedVocalizationId])
+	}, [focusTime, vocalizations, vocalizationState, setSelectedVocalizationId])
 	return (
 		<Splitter
 			width={width}
@@ -60,6 +70,8 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 			<ControlWidget
 				width={0}
 				height={0}
+				video={video}
+				samplingFrequencies={samplingFrequencies}
 			/>
 		</Splitter>
 	)
