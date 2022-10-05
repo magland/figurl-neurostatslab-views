@@ -5,7 +5,7 @@ import { useVocalizations } from '../context-vocalizations';
 import CameraView from './CameraView';
 import CurrentVocalizationControl from './CurrentVocalizationControl';
 import PosesTable from './PosesTable';
-import SaveControl from './SaveControl';
+import SavePanel from './SavePanel';
 import VocalizationsTable from './VocalizationsTable';
 
 type Props = {
@@ -61,7 +61,7 @@ const ControlWidget: FunctionComponent<Props> = ({width, height, video, sampling
                     height={0}
                     initialPosition={300}
                 >
-                    <SaveControl
+                    <SavePanel
                         videoSamplingFrequency={samplingFrequencies.video}
                     />
                     <Splitter

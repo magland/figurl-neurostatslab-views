@@ -1,111 +1,164 @@
-import { getFileData, storeFileData, useUrlState } from "@figurl/interface";
+import { randomAlphaString } from '@figurl/core-utils';
+import { Hyperlink } from '@figurl/core-views';
+import { getFileData, storeFileData, useSignedIn } from "@figurl/interface";
 import { Button } from "@material-ui/core";
-import { FunctionComponent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { usePoses } from "../context-poses";
-import PoseContext, { PoseState } from "../context-poses/PoseContext";
-import { useVocalizations, VocalizationContext } from "../context-vocalizations";
-import { VocalizationState } from "../context-vocalizations/VocalizationContext";
-import { JSONStringifyDeterministic } from "./ControlWidget";
+import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Props ={
-	videoSamplingFrequency: number
+	uri: string | undefined
+	setUri: (uri: string) => void
+	object: {[key: string]: any} | undefined
+	setObject: (object: any) => void
 }
 
-const SaveControl: FunctionComponent<Props> = ({videoSamplingFrequency}) => {
-	const {urlState, updateUrlState} = useUrlState()
+type SaveState = {
+	savedObjectJson?: string
+	savedUri?: string
+}
+
+const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject}) => {
+	const [errorString, setErrorString] = useState<string>('')
+
 	const [saving, setSaving] = useState<boolean>(false)
-	const {vocalizationState, vocalizationDispatch} = useContext(VocalizationContext)
-	const {poseState, poseDispatch} = useContext(PoseContext)
-	const vocalizationsUri = useMemo(() => (urlState['vocalizations']), [urlState])
-	const posesUri = useMemo(() => (urlState['poses']), [urlState])
-	const {vocalizations} = useVocalizations()
-	const {poses} = usePoses(videoSamplingFrequency)
-	const acceptedVocalizations = useMemo(() => (vocalizations.filter(v => (v.labels.includes('accept')))), [vocalizations])
-	const handleSaveVocalizations = useCallback(() => {
-		if (!vocalizationState) return
-		const x = JSONStringifyDeterministic(vocalizationState)
+
+	const {userId} = useSignedIn()
+
+	const [saveState, setSaveState] = useState<SaveState>({})
+
+	const handleSaveSnapshot = useCallback(() => {
+		if (!object) return
+		const x = JSONStringifyDeterministic(object)
 		setSaving(true)
+		setErrorString('')
 		;(async () => {
 			try {
-				const uri = await storeFileData(x)
-				updateUrlState({vocalizations: uri})
+				const newUri = await storeFileData(x)
+				setUri(newUri)
+				setSaveState({
+					savedObjectJson: x,
+					savedUri: newUri
+				})
+			}
+			catch(err: any) {
+				setErrorString(`Problem saving file data: ${err.message}`)
 			}
 			finally {
 				setSaving(false)
 			}
 		})()
-	}, [updateUrlState, vocalizationState])
+	}, [object, setUri])
 
-	const handleSavePoses = useCallback(() => {
-		if (!poseState) return
-		const x = JSONStringifyDeterministic(poseState)
+	const handleSaveJot = useCallback((o: {new?: boolean}={}) => {
+		if (!object) return
+		const jotId = uri && uri.startsWith('jot://') && (!o.new) ? uri.split('?')[0].split('/')[2] : randomAlphaString(12)
+		const x = JSONStringifyDeterministic(object)
 		setSaving(true)
+		setErrorString('')
 		;(async () => {
 			try {
-				const uri = await storeFileData(x)
-				updateUrlState({poses: uri})
+				await storeFileData(x, {jotId})
+				const newUri = `jot://${jotId}`
+				setUri(newUri)
+				setSaveState({
+					savedObjectJson: x,
+					savedUri: newUri
+				})
+			}
+			catch(err: any) {
+				setErrorString(`Problem saving file data: ${err.message}`)
 			}
 			finally {
 				setSaving(false)
 			}
 		})()
-	}, [updateUrlState, poseState])
+	}, [object, setUri, uri])
 
-	///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
 	const first = useRef<boolean>(true)
 	useEffect(() => {
 		if (!first.current) return
-		if (!vocalizationDispatch) return
-		if (!poseDispatch) return
-		{
-			const uri = (urlState.vocalizations || '') as string
-			if (uri) {
-				getFileData(uri, () => {}).then((x) => {
-					if (!x) {
-						console.warn('Empty vocalization state')
-						return
-					}
-					vocalizationDispatch({type: 'setVocalizationState', vocalizationState: x as any as VocalizationState})
-				}).catch((err: Error) => {
-					console.warn('Problem getting vocalization state')
-					console.warn(err)
+		if (uri) {
+			getFileData(uri, () => {}).then((x) => {
+				if (!x) {
+					console.warn('Empty state')
+					return
+				}
+				setObject(x)
+				setSaveState({
+					savedObjectJson: JSONStringifyDeterministic(x),
+					savedUri: uri
 				})
-			}
-		}
-		{
-			const uri = (urlState.poses || '') as string
-			if (uri) {
-				getFileData(uri, () => {}).then((x) => {
-					if (!x) {
-						console.warn('Empty pose state')
-						return
-					}
-					poseDispatch({type: 'setPoseState', poseState: x as any as PoseState})
-				}).catch((err: Error) => {
-					console.warn('Problem getting pose state')
-					console.warn(err)
-				})
-			}
+			}).catch((err: Error) => {
+				console.warn('Problem getting state')
+				console.warn(err)
+			})
 		}
 		first.current = false
-	}, [urlState.vocalizations, urlState.poses, first, vocalizationDispatch, poseDispatch])
-	/////////////////////////////////////////////////////////////////////
+	}, [uri, first, setObject])
+
+	const uriStartsWithJot = (uri || '').startsWith('jot://')
+	const jotId = uriStartsWithJot ? (uri || '').split('?')[0].split('/')[2] : ''
+	const buttonStyle: React.CSSProperties = useMemo(() => ({textTransform: 'none'}), [])
+
+	const saveAsJotEnabled = useMemo(() => {
+		if (saving) return false
+		if (!userId) return false
+		if (!uri?.startsWith('jot://')) return false
+		if ((uri === saveState.savedUri) && (JSONStringifyDeterministic(object || {}) === saveState.savedObjectJson)) {
+			return false
+		}
+		return true
+	}, [uri, object, saveState, saving, userId])
+
+	const saveSnapshotEnabled = useMemo(() => {
+		if (saving) return false
+		if (((uri || '').startsWith('sha1://')) && (uri === saveState.savedUri) && (JSONStringifyDeterministic(object || {}) === saveState.savedObjectJson)) {
+			return false
+		}
+		return true
+	}, [uri, object, saveState, saving])
+
+	const saveAsNewJotEnabled = useMemo(() => {
+		if (saving) return false
+		if (!userId) return false
+		return true
+	}, [saving, userId])
+
 	return (
 		<div>
-			<h3>Save vocalizations</h3>
-			<p>{vocalizations.length} vocalizations ({acceptedVocalizations.length} accepted)</p>
-			<p>URI: {vocalizationsUri}</p>
+			<p>URI: {uri}</p>
 			<div>
-				<Button disabled={saving} onClick={handleSaveVocalizations}>Save vocalizations snapshot</Button>
+				{
+					uriStartsWithJot && (
+						<span>
+							<Button style={buttonStyle} disabled={!saveAsJotEnabled} onClick={() => handleSaveJot({new: false})}>Save as {uri}</Button>
+							{userId && <Hyperlink href={`https://jot.figurl.org/jot/${jotId}`} target="_blank">manage</Hyperlink>}
+						</span>
+					)
+				}
+				<br />
+				<Button style={buttonStyle} disabled={!saveSnapshotEnabled} onClick={handleSaveSnapshot}>Save as snapshot</Button>
+				<br />
+				<Button style={buttonStyle} disabled={!saveAsNewJotEnabled} onClick={() => handleSaveJot({new: true})}>Save as new jot</Button>
+				<br />
+				{
+					saving && 'Saving...'
+				}
+				{
+					!userId && <span style={{fontStyle: 'italic', color: 'gray'}}>You are not signed in</span>
+				}
 			</div>
-			<h3>Save poses</h3>
-			<p>{poses.length} poses</p>
-			<p>URI: {posesUri}</p>
-			<div>
-				<Button disabled={saving} onClick={handleSavePoses}>Save poses snapshot</Button>
-			</div>
+			{errorString && <div style={{color: 'red'}}>{errorString}</div>}
 		</div>
 	)
+}
+
+// Thanks: https://stackoverflow.com/questions/16167581/sort-object-properties-and-json-stringify
+export const JSONStringifyDeterministic = ( obj: Object, space: string | number | undefined =undefined ) => {
+    var allKeys: string[] = [];
+    JSON.stringify( obj, function( key, value ){ allKeys.push( key ); return value; } )
+    allKeys.sort();
+    return JSON.stringify( obj, allKeys, space );
 }
 
 export default SaveControl

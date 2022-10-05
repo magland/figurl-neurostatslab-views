@@ -1246,9 +1246,9 @@
     stream "npm:stream-browserify"
 
 "@figurl/interface@^0.1":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@figurl/interface/-/interface-0.1.6.tgz#b8a4bd78189f85f0eeb452f6270d60e68aa99190"
-  integrity sha512-id6IisKYNR8lAg3s567y0QKG4RBz9S6nCQjqDWvVm3e8IRMy6DgLKu4W7gyaXwYTYeQrJ9xIaKAKGHuXcEXP7A==
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@figurl/interface/-/interface-0.1.8.tgz#552430971738a19ca6bf65612f667c63bfc4b0f1"
+  integrity sha512-eVFg47oVXP6V6pXB9aledA3dl/u5vQBSoRYi81q4MphEk14Y6XvPMN/2H1n2gmqb/1nNCxv1xpCL8AWEADN4Bw==
   dependencies:
     "@figurl/core-utils" "^0.1"
     "@types/node" "^18.7.18"
@@ -2221,9 +2221,9 @@
   integrity sha512-6u+36Dj3aDzhfBVUf/mfmc92OEdzQ2kx2jcXGdigfl70E/neV21ZHE6UCz4MDzTRcVqGAM27fk+DLXvyDsn3Jw==
 
 "@types/node@^18.7.18":
-  version "18.7.23"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.7.23.tgz#75c580983846181ebe5f4abc40fe9dfb2d65665f"
-  integrity sha512-DWNcCHolDq0ZKGizjx2DZjR/PqsYwAcYUJmfMWqtVU2MBMG5Mo+xFZrhGId5r/O5HOuMPyQEcM6KUBp5lBZZBg==
+  version "18.8.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.8.2.tgz#17d42c6322d917764dd3d2d3a10d7884925de067"
+  integrity sha512-cRMwIgdDN43GO4xMWAfJAecYn8wV4JbsOGHNfNUIDiuYkUYAR5ec4Rj7IO2SAhFPEfpPtLtUTbbny/TCT7aDwA==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
