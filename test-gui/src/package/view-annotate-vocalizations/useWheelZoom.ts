@@ -1,15 +1,25 @@
 import { AffineTransform } from "@figurl/spike-sorting-views"
 import { applyAffineTransform, createAffineTransform, identityAffineTransform, inverseAffineTransform, multAffineTransforms } from "@figurl/spike-sorting-views/dist/view-unit-similarity-matrix/AffineTransform"
-import { useCallback, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 
 const useWheelZoom = (x: number, y: number, width: number, height: number) => {
     const [affineTransform, setAffineTransform] = useState<AffineTransform>(identityAffineTransform)
+    const lastWheelEventTimestamp = useRef<number>(0)
     const handleWheel = useCallback((e: React.WheelEvent) => {
         if (!e.shiftKey) return
+
+        // limiting the frequency of wheel events
+        // this is important because if we are using trackpad
+        // we get excessive frequency of wheel events
+        // which makes it difficult to control the zoom
+        const elapsedSinceLastWheelEvent = Date.now() - lastWheelEventTimestamp.current
+        if (elapsedSinceLastWheelEvent < 100) return
+        lastWheelEventTimestamp.current = Date.now()
+
         const boundingRect = e.currentTarget.getBoundingClientRect()
         const point = {x: e.clientX - boundingRect.x - x, y: e.clientY - boundingRect.y - y}
         const deltaY = e.deltaY
-        const scaleFactor = 1.3
+        const scaleFactor = 1.5
         let X = createAffineTransform([
             [scaleFactor, 0, (1 - scaleFactor) * point.x],
             [0, scaleFactor, (1 - scaleFactor) * point.y]

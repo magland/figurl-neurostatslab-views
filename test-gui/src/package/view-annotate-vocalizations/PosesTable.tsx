@@ -63,10 +63,12 @@ const PosesTable: FunctionComponent<Props> = ({width, height, samplingFrequencie
 	const selectedKeys = useMemo(() => (
 		selectedPose ? [`${selectedPose.frame}`] : []
 	), [selectedPose])
+    const topAreaHeight = 90
 	return (
         <div>
             <h3>Poses</h3>
-            <div style={{position: 'absolute', top: 60, width, height: height - 60, overflowY: 'auto'}}>
+            <p>[Use Shift+[mouse-wheel] to zoom on the video frame]</p>
+            <div style={{position: 'absolute', top: topAreaHeight, width, height: height - topAreaHeight, overflowY: 'auto'}}>
                 <NiceTable
                     columns={columns}
                     rows={rows}
