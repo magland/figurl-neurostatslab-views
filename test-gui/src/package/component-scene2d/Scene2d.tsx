@@ -1,6 +1,6 @@
 import { dragSelectReducer, randomAlphaString } from "@figurl/core-utils";
 import { AffineTransform, applyAffineTransformInv } from "@figurl/spike-sorting-views";
-import React, { FunctionComponent, useCallback, useEffect, useReducer, useState } from "react";
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { BaseCanvas, pointInRect, RectangularRegion, Vec4 } from "../figurl-canvas";
 
 // properties common to all Scene2dObject types
@@ -209,6 +209,12 @@ const Scene2d: FunctionComponent<Props> = ({width, height, objects, onClickObjec
 		}
 	}, [dragState, activeSelectRect, activeMouseEvent, handleSelectRect, draggingObject.object, objects])
 
+	const zoomScaleFactor = useMemo(() => {
+		if (!affineTransform) return 1
+		const ff = affineTransform.forward
+		return 1 / Math.sqrt(ff[0][0] * ff[1][1] - ff[0][1] * ff[1][0])
+	}, [affineTransform])
+
 	// paint all the objects on the canvas
 	const paint = useCallback((ctxt: CanvasRenderingContext2D, props: any) => {
 		ctxt.clearRect(0, 0, width, height)
@@ -236,7 +242,7 @@ const Scene2d: FunctionComponent<Props> = ({width, height, objects, onClickObjec
 				if (o.type === 'line') {
 					// draw a line
 					const attributes = !o.selected ? o.attributes : o.selectedAttributes || {...o.attributes, color: 'yellow', width: (o.attributes.width || defaultLineWidth) * 1.5}
-					ctxt.lineWidth = attributes.width || defaultLineWidth
+					ctxt.lineWidth = (attributes.width || defaultLineWidth) * zoomScaleFactor
 					if (attributes.dash) ctxt.setLineDash(attributes.dash)
 					ctxt.strokeStyle = attributes.color || 'black'
 					ctxt.beginPath()
@@ -248,7 +254,7 @@ const Scene2d: FunctionComponent<Props> = ({width, height, objects, onClickObjec
 				else if (o.type === 'marker') {
 					// draw a marker
 					const attributes = !o.selected ? o.attributes : o.selectedAttributes || {...o.attributes, fillColor: 'orange', radius: (o.attributes.radius || defaultMarkerRadius) * 1.5}
-					const radius = attributes.radius || defaultMarkerRadius
+					const radius = (attributes.radius || defaultMarkerRadius) * zoomScaleFactor
 					const shape = o.attributes.shape || 'circle'
 					ctxt.lineWidth = defaultLineWidth
 					ctxt.fillStyle = attributes.fillColor || 'black'
@@ -284,7 +290,7 @@ const Scene2d: FunctionComponent<Props> = ({width, height, objects, onClickObjec
 
 					const attributes = o.attributes
 					if (attributes.dash) ctxt.setLineDash(attributes.dash)
-					ctxt.lineWidth = attributes.width || defaultLineWidth
+					ctxt.lineWidth = (attributes.width || defaultLineWidth) * zoomScaleFactor
 					ctxt.strokeStyle = attributes.color || 'black'
 					ctxt.beginPath()
 					ctxt.moveTo(pp1.x, pp1.y)
@@ -299,7 +305,7 @@ const Scene2d: FunctionComponent<Props> = ({width, height, objects, onClickObjec
 			paintObject(object)
 		})
 		ctxt.restore()
-    }, [objects, width, height, draggingObject, dragState.isActive, dragState.dragRect, affineTransform])
+    }, [objects, width, height, draggingObject, dragState.isActive, dragState.dragRect, affineTransform, zoomScaleFactor])
 
 	const handleMouseDown = useCallback((e: React.MouseEvent) => {
         const boundingRect = e.currentTarget.getBoundingClientRect()

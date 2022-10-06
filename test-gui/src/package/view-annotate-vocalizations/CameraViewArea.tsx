@@ -1,6 +1,7 @@
 import { useTimeFocus } from "@figurl/timeseries-views";
 import { FunctionComponent, useMemo } from "react";
 import PoseViewport from "./PoseViewport";
+import useWheelZoom from "./useWheelZoom";
 import VideoFrameView from "./VideoFrameView";
 
 type Props ={
@@ -25,14 +26,16 @@ const CameraViewArea: FunctionComponent<Props> = ({width, height, video, canEdit
 		w: W,
 		h: H
 	}), [W, H, width, height])
+	const {affineTransform, handleWheel} = useWheelZoom(rect.x, rect.y, rect.w, rect.h)
 	return (
-		<div style={{position: 'absolute', width, height}}>
+		<div style={{position: 'absolute', width, height}} onWheel={handleWheel}>
 			<div className="video-frame" style={{position: 'absolute', left: rect.x, top: rect.y, width: rect.w, height: rect.h}}>
 				<VideoFrameView
 					width={rect.w}
 					height={rect.h}
 					timeSec={focusTime}
 					src={video.uri}
+					affineTransform={affineTransform}
 				/>
 			</div>
 			<div className="pose-viewport" style={{position: 'absolute', left: rect.x, top: rect.y, width: rect.w, height: rect.h}}>
@@ -43,6 +46,7 @@ const CameraViewArea: FunctionComponent<Props> = ({width, height, video, canEdit
 					videoHeight={video.height}
 					canEditPose={canEditPose}
 					videoSamplingFrequency={video.samplingFrequency}
+					affineTransform={affineTransform}
 				/>
 			</div>
 		</div>

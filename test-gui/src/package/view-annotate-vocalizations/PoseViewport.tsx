@@ -1,6 +1,6 @@
-import { Scene2d } from "@figurl/core-views";
+import { AffineTransform } from "@figurl/spike-sorting-views";
 import { FunctionComponent, useCallback, useMemo } from "react";
-import { Scene2dObject } from "../component-scene2d";
+import { Scene2dObject, Scene2d } from "../component-scene2d";
 import { usePoses } from "../context-poses";
 
 type Props ={
@@ -10,9 +10,10 @@ type Props ={
 	videoHeight: number
 	canEditPose: boolean
     videoSamplingFrequency: number
+	affineTransform: AffineTransform
 }
 
-const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, videoHeight, canEditPose, videoSamplingFrequency}) => {
+const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, videoHeight, canEditPose, videoSamplingFrequency, affineTransform}) => {
 	const {selectedPose, addPosePoint, movePosePoint} = usePoses(videoSamplingFrequency)
 
 	const objects: Scene2dObject[] = useMemo(() => {
@@ -68,6 +69,7 @@ const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, vide
 			objects={objects}
 			onDragObject={handleDragObject}
 			onClick={handleClick}
+			affineTransform={affineTransform}
 		/>
 	)
 }

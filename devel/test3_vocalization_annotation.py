@@ -1,8 +1,8 @@
-# 9/29/22
-# https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev5&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={"vocalizations":"sha1://fad5a8231dc33a6cb6495007e466d104e03edb33"}&label=test%20annotate%20vocalizations
+# 10/5/22
+# https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev5&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={"vocalizations":"sha1://e4e1b276e159fe8408bad4591fa7ff62c8c52748"}&label=test%20annotate%20vocalizations
 
-# dev
-# https://www.figurl.org/f?v=http://localhost:3000&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={%22vocalizations%22:%22sha1://fad5a8231dc33a6cb6495007e466d104e03edb33%22,%22poses%22:%22sha1://f213f711d0d96af2a41d95b239c802222afa7185%22}&label=test%20annotate%20vocalizations
+# with some annotation
+# https://www.figurl.org/f?v=gs://figurl/neurostatslab-views-1dev5&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={%22vocalizations%22:%22jot://REjqDRLvCmnN%22,%22poses%22:%22jot://IaqZTbkEMZMQ%22}&label=test%20annotate%20vocalizations
 
 from typing import Union
 import numpy as np
