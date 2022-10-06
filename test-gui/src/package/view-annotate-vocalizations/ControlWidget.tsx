@@ -4,7 +4,6 @@ import { FunctionComponent, useMemo } from 'react';
 import { useVocalizations } from '../context-vocalizations';
 import CameraView from './CameraView';
 import CurrentVocalizationControl from './CurrentVocalizationControl';
-import PosesTable from './PosesTable';
 import SavePanel from './SavePanel';
 import VocalizationsTable from './VocalizationsTable';
 
@@ -41,7 +40,7 @@ const ControlWidget: FunctionComponent<Props> = ({width, height, video, sampling
         <Splitter
             width={width}
             height={height}
-            initialPosition={300}
+            initialPosition={500}
         >
             <VocalizationsTable
                 width={0}
@@ -64,27 +63,16 @@ const ControlWidget: FunctionComponent<Props> = ({width, height, video, sampling
                     <SavePanel
                         videoSamplingFrequency={samplingFrequencies.video}
                     />
-                    <Splitter
-                        width={0}
-                        height={0}
-                        initialPosition={300}
-                    >
-                        <PosesTable
-                            width={0}
-                            height={0}
-                            samplingFrequencies={samplingFrequencies}
-                        />
-                        {
-                            video ? (
-                                <CameraView
-                                    width={0}
-                                    height={0}
-                                    video={video}
-                                    canEditPose={canEditPose}
-                                />
-                            ) : <div />
-                        }
-                    </Splitter>
+                    {
+                        video ? (
+                            <CameraView
+                                width={0}
+                                height={0}
+                                video={video}
+                                canEditPose={canEditPose}
+                            />
+                        ) : <div />
+                    }
                 </Splitter>
             </Splitter>
         </Splitter>

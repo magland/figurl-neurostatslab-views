@@ -10,12 +10,20 @@ type Props ={
 
 const columns: NiceTableColumn[] = [
     {
+        key: 'vocalizationId',
+        label: 'ID'
+    },
+    {
         key: 'labels',
         label: 'Labels'
     },
     {
         key: 'interval',
         label: 'Interval'
+    },
+    {
+        key: 'pose',
+        label: 'Pose'
     }
 ]
 
@@ -29,14 +37,15 @@ const VocalizationsTable: FunctionComponent<Props> = ({width, height}) => {
             return {
                 key: x.vocalizationId,
                 columnValues: {
+                    vocalizationId: {
+                        element: <Hyperlink onClick={handleClick}>{x.vocalizationId}</Hyperlink>
+                    },
                     labels: {
                         text: x.labels.join(', ')
                         // element: <EditableTextField onChange={newLabel => setVocalizationLabel(x.vocalizationId, newLabel)} value={x.labels.join(', ')} />
                     },
-                    interval: {
-						// element: <Hyperlink onClick={() => recordingSelectionDispatch({type: 'setFocusTimeInterval', focusTimeIntervalSec: x.timeIntervalSec, autoScrollVisibleTimeRange: true})}>{formatTimeInterval(x.timeIntervalSec)}</Hyperlink>
-                        element: <Hyperlink onClick={handleClick}>{formatTimeInterval(timeIntervalForVocalization(vocalizationState, x))}</Hyperlink>
-                    }
+                    interval: formatTimeInterval(timeIntervalForVocalization(vocalizationState, x)),
+                    pose: x.pose ? 'yes' : ''
                 }
             }
         })

@@ -1,4 +1,4 @@
-import { Vocalization, VocalizationState } from "./VocalizationContext"
+import { Vocalization, VocalizationPose, VocalizationState } from "./VocalizationContext"
 
 type VocalizationAction = {
     type: 'addVocalization'
@@ -21,6 +21,22 @@ type VocalizationAction = {
     type: 'removeVocalizationLabel'
     vocalizationId: string
     label: string
+} | {
+    type: 'setPose'
+    vocalizationId: string
+    pose: VocalizationPose
+} | {
+    type: 'removePose'
+    vocalizationId: string
+} | {
+    type: 'addPosePoint'
+    vocalizationId: string
+    point: {x: number, y: number}
+} | {
+    type: 'movePosePoint'
+    vocalizationId: string
+    pointIndex: number
+    newPoint: {x: number, y: number}
 }
 
 export default VocalizationAction

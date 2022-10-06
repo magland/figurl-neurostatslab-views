@@ -4,11 +4,16 @@ import React, { useCallback, useContext, useMemo } from "react"
 import { timeIntervalForVocalization } from "../view-annotate-vocalizations/VocalizationsTable"
 import VocalizationAction from "./VocalizationAction"
 
+export type VocalizationPose = {
+    points: {x: number, y: number}[]
+}
+
 export type Vocalization = {
     vocalizationId: string
     labels: string[]
     startFrame: number
     endFrame: number
+    pose?: VocalizationPose
 }
 
 export type VocalizationState = {
@@ -57,6 +62,30 @@ export const vocalizationReducer = (s: VocalizationState, a: VocalizationAction)
             vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId ? (removeLabel(v, a.label)) : v))
         }
     }
+    else if (a.type === 'setPose') {
+        return {
+            ...s,
+            vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId) ? {...v, pose: a.pose} : v)
+        }
+    }
+    else if (a.type === 'addPosePoint') {
+        return {
+            ...s,
+            vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId) ? {...v, pose: addPosePoint(v.pose, a.point)} : v)
+        }
+    }
+    else if (a.type === 'movePosePoint') {
+        return {
+            ...s,
+            vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId) ? {...v, pose: movePosePoint(v.pose, a.pointIndex, a.newPoint)} : v)
+        }
+    }
+    else if (a.type === 'removePose') {
+        return {
+            ...s,
+            vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId ? ({...v, pose: undefined}) : v))
+        }
+    }
     else return s
 }
 
@@ -76,6 +105,22 @@ const removeLabel = (v: Vocalization, label: string): Vocalization => {
 
 const sortVocalizations = (x: Vocalization[]) => {
     return [...x].sort((a, b) => (a.startFrame - b.startFrame))
+}
+
+const addPosePoint = (pose: VocalizationPose | undefined, point: {x: number, y: number}): VocalizationPose => {
+    if (!pose) return {
+        points: [point]
+    }
+    if (pose.points.length >= 2) return pose
+    return {...pose, points: [...pose.points, point]}
+}
+
+const movePosePoint = (pose: VocalizationPose | undefined, pointIndex: number, newPoint: {x: number, y: number}) => {
+    if (!pose) return undefined
+    const newPoints = [...pose.points]
+    if (pointIndex >= newPoints.length) return pose
+    newPoints[pointIndex] = newPoint
+    return {...pose, points: newPoints}
 }
 
 export type VocalizationSelection = {
@@ -169,6 +214,18 @@ export const useVocalizations = () => {
     const removeVocalizationLabel = useCallback((vocalizationId: string, label: string) => {
         vocalizationDispatch && vocalizationDispatch({type: 'removeVocalizationLabel', vocalizationId, label})
     }, [vocalizationDispatch])
+    const setPose = useCallback((vocalizationId: string, pose: VocalizationPose) => {
+        vocalizationDispatch && vocalizationDispatch({type: 'setPose', vocalizationId, pose})
+    }, [vocalizationDispatch])
+    const addPosePoint = useCallback((vocalizationId: string, point: {x: number, y: number}) => {
+        vocalizationDispatch && vocalizationDispatch({type: 'addPosePoint', vocalizationId, point})
+    }, [vocalizationDispatch])
+    const movePosePoint = useCallback((vocalizationId: string, pointIndex: number, newPoint: {x: number, y: number}) => {
+        vocalizationDispatch && vocalizationDispatch({type: 'movePosePoint', vocalizationId, pointIndex, newPoint})
+    }, [vocalizationDispatch])
+    const removePose = useCallback((vocalizationId: string) => {
+        vocalizationDispatch && vocalizationDispatch({type: 'removePose', vocalizationId})
+    }, [vocalizationDispatch])
     return useMemo(() => ({
         vocalizationState,
         vocalizations,
@@ -180,8 +237,12 @@ export const useVocalizations = () => {
         selectPreviousVocalization,
         selectNextVocalization,
         addVocalizationLabel,
-        removeVocalizationLabel
-    }), [vocalizations, addVocalization, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizationState])
+        removeVocalizationLabel,
+        setPose,
+        addPosePoint,
+        movePosePoint,
+        removePose
+    }), [vocalizations, addVocalization, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizationState, setPose, addPosePoint, movePosePoint, removePose])
 }
 
 export default VocalizationContext

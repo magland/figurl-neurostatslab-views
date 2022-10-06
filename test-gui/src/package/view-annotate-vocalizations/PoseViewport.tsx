@@ -1,7 +1,7 @@
 import { AffineTransform } from "@figurl/spike-sorting-views";
 import { FunctionComponent, useCallback, useMemo } from "react";
 import { Scene2dObject, Scene2d } from "../component-scene2d";
-import { usePoses } from "../context-poses";
+import { useVocalizations } from "../context-vocalizations";
 
 type Props ={
 	width: number
@@ -14,7 +14,8 @@ type Props ={
 }
 
 const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, videoHeight, canEditPose, videoSamplingFrequency, affineTransform}) => {
-	const {selectedPose, addPosePoint, movePosePoint} = usePoses(videoSamplingFrequency)
+	const {selectedVocalization, addPosePoint, movePosePoint} = useVocalizations()
+	const selectedPose = useMemo(() => (selectedVocalization?.pose), [selectedVocalization])
 
 	const objects: Scene2dObject[] = useMemo(() => {
 		if (!selectedPose) return []
@@ -47,20 +48,20 @@ const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, vide
 		const x = Math.floor(p.x / width * videoWidth)
 		const y = Math.floor(p.y / height * videoHeight)
 		if ((selectedPose?.points.length || 0) < 2) {
-			addPosePoint({
+			addPosePoint(selectedVocalization?.vocalizationId || '', {
 				x,
 				y
 			})
 		}
-    }, [addPosePoint, selectedPose, width, height, videoWidth, videoHeight, canEditPose])
+    }, [selectedVocalization, addPosePoint, selectedPose, width, height, videoWidth, videoHeight, canEditPose])
 
 	const handleDragObject = useCallback((objectId: string, p: {x: number, y: number}, e: React.MouseEvent) => {
 		if (!canEditPose) return
 		const x = Math.floor(p.x / width * videoWidth)
 		const y = Math.floor(p.y / height * videoHeight)
 		const pointIndex = parseInt(objectId.slice(`pt-`.length))
-		movePosePoint(pointIndex, {x, y})
-    }, [width, height, videoWidth, videoHeight, movePosePoint, canEditPose])
+		movePosePoint(selectedVocalization?.vocalizationId || '', pointIndex, {x, y})
+    }, [selectedVocalization, width, height, videoWidth, videoHeight, movePosePoint, canEditPose])
 
 	return (
 		<Scene2d

@@ -1,6 +1,6 @@
 import { Splitter } from "@figurl/core-views";
 import { AnnotationContext, useTimeFocus } from "@figurl/timeseries-views";
-import { FunctionComponent, useContext, useEffect, useMemo } from "react";
+import { FunctionComponent, KeyboardEventHandler, useCallback, useContext, useEffect, useMemo } from "react";
 import { useVocalizations } from "../context-vocalizations";
 import { AnnotateVocalizationsViewData } from "./AnnotateVocalizationsViewData";
 import ControlWidget from "./ControlWidget";
@@ -15,7 +15,7 @@ type Props ={
 
 const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, height}) => {
 	const {spectrogram, video} = data
-	const {vocalizations, setSelectedVocalizationId, vocalizationState} = useVocalizations()
+	const {vocalizations, setSelectedVocalizationId, vocalizationState, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, selectedVocalization} = useVocalizations()
 	const {focusTime} = useTimeFocus()
 	const {annotationDispatch} = useContext(AnnotationContext)
 	const samplingFrequencies = useMemo(() => ({
@@ -54,26 +54,43 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 			}
 		}
 	}, [focusTime, vocalizations, vocalizationState, setSelectedVocalizationId])
+	const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback((e) => {
+		if (e.key === 'n') {
+			selectNextVocalization()
+		}
+		else if (e.key === 'p') {
+			selectPreviousVocalization()
+		}
+		else if (e.key === 'a') {
+			if (!selectedVocalization) return
+			addVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
+		}
+	}, [selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, selectedVocalization])
 	return (
-		<Splitter
-			width={width}
-			height={height}
-			direction="vertical"
-			initialPosition={400}
-			adjustable={true}
+		<div
+			onKeyDown={handleKeyDown}
+			tabIndex={0}
 		>
-			<SpectrogramWidget
-				width={0}
-				height={0}
-				spectrogram={spectrogram}
-			/>
-			<ControlWidget
-				width={0}
-				height={0}
-				video={video}
-				samplingFrequencies={samplingFrequencies}
-			/>
-		</Splitter>
+			<Splitter
+				width={width}
+				height={height}
+				direction="vertical"
+				initialPosition={400}
+				adjustable={true}
+			>
+				<SpectrogramWidget
+					width={0}
+					height={0}
+					spectrogram={spectrogram}
+				/>
+				<ControlWidget
+					width={0}
+					height={0}
+					video={video}
+					samplingFrequencies={samplingFrequencies}
+				/>
+			</Splitter>
+		</div>
 	)
 }
 

@@ -1,4 +1,5 @@
-import { FunctionComponent } from "react";
+import { Button } from "@material-ui/core";
+import { FunctionComponent, useCallback } from "react";
 import { useVocalizations } from "../context-vocalizations";
 import CameraViewArea from "./CameraViewArea";
 
@@ -15,10 +16,14 @@ type Props ={
 }
 
 const CameraView: FunctionComponent<Props> = ({width, height, video, canEditPose}) => {
-	const topPanelHeight = 50
+	const topPanelHeight = 100
 	const viewAreaWidth = width
 	const viewAreaHeight = height - topPanelHeight
-	const {selectedVocalization} = useVocalizations()
+	const {selectedVocalization, removePose} = useVocalizations()
+	const clearPoseEnabled = canEditPose && ((selectedVocalization?.pose?.points.length || 0) > 0)
+	const handleClearPose = useCallback(() => {
+		selectedVocalization && removePose(selectedVocalization?.vocalizationId)
+	}, [selectedVocalization, removePose])
 	return (
 		<div style={{position: 'absolute', width, height}}>
 			{
@@ -28,6 +33,9 @@ const CameraView: FunctionComponent<Props> = ({width, height, video, canEditPose
 					<h3>No associated vocalization</h3>
 				)
 			}
+			<div>
+				<Button disabled={!clearPoseEnabled} onClick={handleClearPose}>Clear pose</Button>
+			</div>
 			<div style={{position: 'absolute', top: topPanelHeight, width: viewAreaWidth, height: viewAreaHeight}}>
 				<CameraViewArea
 					width={viewAreaWidth}
