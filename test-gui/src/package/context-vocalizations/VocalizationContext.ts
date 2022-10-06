@@ -56,6 +56,12 @@ export const vocalizationReducer = (s: VocalizationState, a: VocalizationAction)
             vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId ? (addLabel(v, a.label)) : v))
         }
     }
+    else if (a.type === 'addVocalizationLabelToAll') {
+        return {
+            ...s,
+            vocalizations: s.vocalizations.map(v => ((addLabel(v, a.label))))
+        }
+    }
     else if (a.type === 'removeVocalizationLabel') {
         return {
             ...s,
@@ -202,14 +208,16 @@ export const useVocalizations = () => {
         setSelectedVocalizationId(vocalizations[i - 1].vocalizationId)
 	}, [selectedVocalization, vocalizations, setSelectedVocalizationId])
 	const selectNextVocalization = useCallback(() => {
-		if (!selectedVocalization) return
-        const i = vocalizations.map(v => (v.vocalizationId)).indexOf(selectedVocalization.vocalizationId)
-        if (i < 0) return
-        if (i + 1 >= vocalizations.length) return
-        setSelectedVocalizationId(vocalizations[i + 1].vocalizationId)
+        const i = vocalizations.map(v => (v.vocalizationId)).indexOf(selectedVocalization?.vocalizationId || '')
+        const nextIndex = i < 0 ? 0 : i + 1
+        if (nextIndex >= vocalizations.length) return
+        setSelectedVocalizationId(vocalizations[nextIndex].vocalizationId)
 	}, [selectedVocalization, vocalizations, setSelectedVocalizationId])
     const addVocalizationLabel = useCallback((vocalizationId: string, label: string) => {
         vocalizationDispatch && vocalizationDispatch({type: 'addVocalizationLabel', vocalizationId, label})
+    }, [vocalizationDispatch])
+    const addVocalizationLabelToAll = useCallback((label: string) => {
+        vocalizationDispatch && vocalizationDispatch({type: 'addVocalizationLabelToAll', label})
     }, [vocalizationDispatch])
     const removeVocalizationLabel = useCallback((vocalizationId: string, label: string) => {
         vocalizationDispatch && vocalizationDispatch({type: 'removeVocalizationLabel', vocalizationId, label})
@@ -237,12 +245,13 @@ export const useVocalizations = () => {
         selectPreviousVocalization,
         selectNextVocalization,
         addVocalizationLabel,
+        addVocalizationLabelToAll,
         removeVocalizationLabel,
         setPose,
         addPosePoint,
         movePosePoint,
         removePose
-    }), [vocalizations, addVocalization, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizationState, setPose, addPosePoint, movePosePoint, removePose])
+    }), [vocalizations, addVocalization, addVocalizationLabelToAll, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizationState, setPose, addPosePoint, movePosePoint, removePose])
 }
 
 export default VocalizationContext

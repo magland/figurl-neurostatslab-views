@@ -11,7 +11,7 @@ type Props ={
 }
 
 const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) => {
-	const {addVocalization, removeVocalization, addVocalizationLabel, removeVocalizationLabel, setSelectedVocalizationId, selectedVocalization, selectNextVocalization, selectPreviousVocalization, vocalizationState} = useVocalizations()
+	const {addVocalization, removeVocalization, addVocalizationLabel, removeVocalizationLabel, setSelectedVocalizationId, selectedVocalization, selectNextVocalization, selectPreviousVocalization, vocalizationState, addVocalizationLabelToAll} = useVocalizations()
 	const {focusTimeInterval, focusTime} = useTimeFocus()
 	const focusFrameInterval = useMemo(() => {
 		if (!vocalizationState) return undefined
@@ -104,6 +104,28 @@ const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) =
 					</div>
 				)
 			}
+			<hr />
+			<div>
+				<Button onClick={() => addVocalizationLabelToAll('accept')}>Accept all vocalizations</Button>
+			</div>
+			<hr />
+			<h2>Shortcuts</h2>
+			<h4>Vocalization</h4>
+			<ul>
+				<li>n: select next vocalization</li>
+				<li>p: select previous vocalization</li>
+				<li>a: accept vocalization</li>
+				<li>u: unaccept vocalization</li>
+			</ul>
+			<h4>Camera</h4>
+			<ul>
+				<li>Shift+MouseWheel: zoom</li>
+			</ul>
+			<h4>Audio spectrogram</h4>
+			<ul>
+				<li>MouseWheel: zoom</li>
+				<li>Click+Drag: pan</li>
+			</ul>
 		</div>
 	)
 }

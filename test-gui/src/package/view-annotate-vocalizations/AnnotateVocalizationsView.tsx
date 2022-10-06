@@ -15,7 +15,7 @@ type Props ={
 
 const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, height}) => {
 	const {spectrogram, video} = data
-	const {vocalizations, setSelectedVocalizationId, vocalizationState, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, selectedVocalization} = useVocalizations()
+	const {vocalizations, setSelectedVocalizationId, vocalizationState, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, selectedVocalization, removeVocalizationLabel} = useVocalizations()
 	const {focusTime} = useTimeFocus()
 	const {annotationDispatch} = useContext(AnnotationContext)
 	const samplingFrequencies = useMemo(() => ({
@@ -65,7 +65,11 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 			if (!selectedVocalization) return
 			addVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
 		}
-	}, [selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, selectedVocalization])
+		else if (e.key === 'u') {
+			if (!selectedVocalization) return
+			removeVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
+		}
+	}, [selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, selectedVocalization, removeVocalizationLabel])
 	return (
 		<div
 			onKeyDown={handleKeyDown}
