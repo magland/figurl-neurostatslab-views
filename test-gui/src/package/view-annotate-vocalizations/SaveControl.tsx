@@ -124,6 +124,12 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 		return true
 	}, [saving, userId])
 
+	const handleExportAsJson = useCallback(() => {
+		if (!object) return
+		const x = JSONStringifyDeterministic(object)
+		downloadTextFile('vocalization-annotations.json', x)
+	}, [object])
+
 	return (
 		<div>
 			<p>URI: {uri}</p>
@@ -149,6 +155,8 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 				}
 			</div>
 			{errorString && <div style={{color: 'red'}}>{errorString}</div>}
+			<hr />
+			<Button onClick={handleExportAsJson}>Export as JSON</Button>
 		</div>
 	)
 }
@@ -159,6 +167,20 @@ export const JSONStringifyDeterministic = ( obj: Object, space: string | number 
     JSON.stringify( obj, function( key, value ){ allKeys.push( key ); return value; } )
     allKeys.sort();
     return JSON.stringify( obj, allKeys, space );
+}
+
+// Thanks: https://stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server
+function downloadTextFile(filename: string, text: string) {
+	var element = document.createElement('a');
+	element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+	element.setAttribute('download', filename);
+  
+	element.style.display = 'none';
+	document.body.appendChild(element);
+  
+	element.click();
+  
+	document.body.removeChild(element);
 }
 
 export default SaveControl
