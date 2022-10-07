@@ -11,37 +11,53 @@ type Props ={
 	canEditPose: boolean
     videoSamplingFrequency: number
 	affineTransform: AffineTransform
+	onSelectRect?: (r: {x: number, y: number, w: number, h: number}) => void
 }
 
-const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, videoHeight, canEditPose, videoSamplingFrequency, affineTransform}) => {
-	const {selectedVocalization, addPosePoint, movePosePoint} = useVocalizations()
+const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, videoHeight, canEditPose, onSelectRect, videoSamplingFrequency, affineTransform}) => {
+	const {selectedVocalization, addPosePoint, movePosePoint, box} = useVocalizations()
 	const selectedPose = useMemo(() => (selectedVocalization?.pose), [selectedVocalization])
 
 	const objects: Scene2dObject[] = useMemo(() => {
-		if (!selectedPose) return []
 		const ret: Scene2dObject[] = []
-		selectedPose.points.forEach((pp, ii) => {
-			const qq = {x: (pp.x + 0.5) / videoWidth * width, y: (pp.y + 0.5) / videoHeight * height}
-			ret.push({
-				type: 'marker',
-				draggable: canEditPose ? true : false,
-				objectId: `pt-${ii}`,
-				x: qq.x,
-				y: qq.y,
-				attributes: {fillColor: colorForPointIndex(ii), radius: 5}
-			})
-			if (ii > 0) {
+		if (selectedPose) {
+			selectedPose.points.forEach((pp, ii) => {
+				const qq = {x: (pp.x + 0.5) / videoWidth * width, y: (pp.y + 0.5) / videoHeight * height}
 				ret.push({
-					type: 'connector',
-					objectId: `connector-${ii}`,
-					objectId1: `pt-${ii - 1}`,
-					objectId2: `pt-${ii}`,
-					attributes: {color: 'yellow', dash: [5, 5]}
+					type: 'marker',
+					draggable: canEditPose ? true : false,
+					objectId: `pt-${ii}`,
+					x: qq.x,
+					y: qq.y,
+					attributes: {fillColor: colorForPointIndex(ii), radius: 5}
 				})
-			}
-		}, [])
+				if (ii > 0) {
+					ret.push({
+						type: 'connector',
+						objectId: `connector-${ii}`,
+						objectId1: `pt-${ii - 1}`,
+						objectId2: `pt-${ii}`,
+						attributes: {color: 'yellow', dash: [5, 5]}
+					})
+				}
+			})
+		}
+		if (box) {
+			const r = box
+			const qq00 = {x: (r.x + 0.5) / videoWidth * width, y: (r.y + 0.5) / videoHeight * height}
+			const qq11 = {x: (r.x + r.w + 0.5) / videoWidth * width, y: (r.y + r.h + 0.5) / videoHeight * height}
+			ret.push({
+				type: 'rectangle',
+				objectId: 'box',
+				x: qq00.x,
+				y: qq00.y,
+				w: qq11.x - qq00.x,
+				h: qq11.y - qq00.y,
+				attributes: {color: 'green', width: 2}
+			})
+		}
 		return ret
-	}, [selectedPose, width, height, videoWidth, videoHeight, canEditPose])
+	}, [selectedPose, width, height, videoWidth, videoHeight, canEditPose, box])
 
 	const handleClick = useCallback((p: {x: number, y: number}, e: React.MouseEvent) => {
 		if (!canEditPose) return
@@ -63,12 +79,21 @@ const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, vide
 		movePosePoint(selectedVocalization?.vocalizationId || '', pointIndex, {x, y})
     }, [selectedVocalization, width, height, videoWidth, videoHeight, movePosePoint, canEditPose])
 
+	const handleSelectRect = useCallback((r: {x: number, y: number, w: number, h: number}) => {
+		const x = Math.floor(r.x / width * videoWidth)
+		const y = Math.floor(r.y / height * videoHeight)
+		const w = Math.floor(r.w / width * videoWidth)
+		const h = Math.floor(r.h / height * videoHeight)
+		onSelectRect && onSelectRect({x, y, w, h})
+	}, [onSelectRect, width, height, videoWidth, videoHeight])
+
 	return (
 		<Scene2d
 			width={width}
 			height={height}
 			objects={objects}
 			onDragObject={handleDragObject}
+			onSelectRect={handleSelectRect}
 			onClick={handleClick}
 			affineTransform={affineTransform}
 		/>

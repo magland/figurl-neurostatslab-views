@@ -14,9 +14,10 @@ type Props ={
 		samplingFrequency: number
 	}
 	canEditPose: boolean
+	onSelectRect?: (r: {x: number, y: number, w: number, h: number}) => void
 }
 
-const CameraViewArea: FunctionComponent<Props> = ({width, height, video, canEditPose}) => {
+const CameraViewArea: FunctionComponent<Props> = ({width, height, video, canEditPose, onSelectRect}) => {
 	const {focusTime} = useTimeFocus()
 	const W = video.width * height < video.height * width ? video.width * height / video.height : width
 	const H = video.width * height < video.height * width ? height : video.height * width / video.width
@@ -47,6 +48,7 @@ const CameraViewArea: FunctionComponent<Props> = ({width, height, video, canEdit
 					canEditPose={canEditPose}
 					videoSamplingFrequency={video.samplingFrequency}
 					affineTransform={affineTransform}
+					onSelectRect={onSelectRect}
 				/>
 			</div>
 		</div>

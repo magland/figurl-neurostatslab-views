@@ -14,11 +14,13 @@ export type Vocalization = {
     startFrame: number
     endFrame: number
     pose?: VocalizationPose
+    box?: {x: number, y: number, w: number, h: number}
 }
 
 export type VocalizationState = {
     samplingFrequency: number
     vocalizations: Vocalization[]
+    box?: {x: number, y: number, w: number, h: number}
 }
 
 export const defaultVocalizationState: VocalizationState = {
@@ -90,6 +92,12 @@ export const vocalizationReducer = (s: VocalizationState, a: VocalizationAction)
         return {
             ...s,
             vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId ? ({...v, pose: undefined}) : v))
+        }
+    }
+    else if (a.type === 'setBox') {
+        return {
+            ...s,
+            box: a.box
         }
     }
     else return s
@@ -234,6 +242,10 @@ export const useVocalizations = () => {
     const removePose = useCallback((vocalizationId: string) => {
         vocalizationDispatch && vocalizationDispatch({type: 'removePose', vocalizationId})
     }, [vocalizationDispatch])
+    const setBox = useCallback((box: {x: number, y: number, w: number, h: number}) => {
+        vocalizationDispatch && vocalizationDispatch({type: 'setBox', box})
+    }, [vocalizationDispatch])
+    const box = vocalizationState?.box
     return useMemo(() => ({
         vocalizationState,
         vocalizations,
@@ -250,8 +262,10 @@ export const useVocalizations = () => {
         setPose,
         addPosePoint,
         movePosePoint,
-        removePose
-    }), [vocalizations, addVocalization, addVocalizationLabelToAll, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizationState, setPose, addPosePoint, movePosePoint, removePose])
+        removePose,
+        setBox,
+        box
+    }), [vocalizations, addVocalization, addVocalizationLabelToAll, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizationState, setPose, addPosePoint, movePosePoint, removePose, setBox, box])
 }
 
 export default VocalizationContext

@@ -57,11 +57,26 @@ type Scene2dConnectorObject = Scene2dObjectCommon & {
 	}
 }
 
+type Scene2dRectangleObject = Scene2dObjectCommon & {
+	type: 'rectangle',
+	objectId: string,
+	x: number,
+	y: number,
+	w: number,
+	h: number,
+	attributes: {
+		color: string // line color
+		dash?: number[] // for example [4, 3] gives a dash that looks like ____   ____   ____   ____
+		width?: number // line width
+	}
+}
+
 // Scene2d object type
 export type Scene2dObject =
 	Scene2dLineObject |
 	Scene2dMarkerObject |
-	Scene2dConnectorObject
+	Scene2dConnectorObject |
+	Scene2dRectangleObject
 
 type Props ={
 	width: number
@@ -76,6 +91,8 @@ type Props ={
 
 	// objects have been selected by dragging a selection rect and releasing
 	onSelectObjects?: (objectIds: string[], e: React.MouseEvent | undefined) => void
+
+	onSelectRect?: (r: {x: number, y: number, w: number, h: number}) => void
 
 	// the canvas has been clicked, but not on a clickable object
 	onClick?: (p: {x: number, y: number}, e: React.MouseEvent) => void
@@ -125,7 +142,7 @@ const draggingObjectReducer = (s: DraggingObjectState, a: DraggingObjectAction):
 	else return s
 }
 
-const Scene2d: FunctionComponent<Props> = ({width, height, objects, onClickObject, onDragObject, onSelectObjects, onClick, affineTransform}) => {
+const Scene2d: FunctionComponent<Props> = ({width, height, objects, onClickObject, onDragObject, onSelectObjects, onSelectRect, onClick, affineTransform}) => {
 	// The drag state (the dragSelectReducer is more generic and is defined elsewhere)
 	const [dragState, dragStateDispatch] = useReducer(dragSelectReducer, {})
 
@@ -152,7 +169,8 @@ const Scene2d: FunctionComponent<Props> = ({width, height, objects, onClickObjec
 		}).map(o => (o.objectId))
 		// call the event handler
 		onSelectObjects && onSelectObjects(objectIds, e)
-	}, [objects, onSelectObjects])
+		onSelectRect && onSelectRect({x: rr.xmin, y: rr.ymin, w: rr.xmax - rr.xmin, h: rr.ymax - rr.ymin})
+	}, [objects, onSelectObjects, onSelectRect])
 
 	useEffect(() => {
 		// dragState, activeSelectRect, or dragging object has changed
@@ -270,6 +288,23 @@ const Scene2d: FunctionComponent<Props> = ({width, height, objects, onClickObjec
 					attributes.fillColor && ctxt.fill()
 					attributes.lineColor && ctxt.stroke()
 				}
+			}
+			else if (o.type === 'rectangle') {
+				let pp00 = {x: o.x, y: o.y}
+				let pp11 = {x: o.x + o.w, y: o.y + o.h}
+
+				const attributes = o.attributes
+				ctxt.lineWidth = (attributes.width || defaultLineWidth) * zoomScaleFactor
+				if (attributes.dash) ctxt.setLineDash(attributes.dash)
+				ctxt.strokeStyle = attributes.color || 'black'
+				ctxt.beginPath()
+				ctxt.moveTo(pp00.x, pp00.y)
+				ctxt.lineTo(pp11.x, pp00.y)
+				ctxt.lineTo(pp11.x, pp11.y)
+				ctxt.lineTo(pp00.x, pp11.y)
+				ctxt.lineTo(pp00.x, pp00.y)
+				ctxt.stroke()
+				ctxt.setLineDash([])
 			}
 			else if (o.type === 'connector') {
 				// draw a connector

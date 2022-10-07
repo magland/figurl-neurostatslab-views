@@ -40,6 +40,9 @@ type VocalizationAction = {
     vocalizationId: string
     pointIndex: number
     newPoint: {x: number, y: number}
+} | {
+    type: 'setBox',
+    box?: {x: number, y: number, w: number, h: number}
 }
 
 export default VocalizationAction
