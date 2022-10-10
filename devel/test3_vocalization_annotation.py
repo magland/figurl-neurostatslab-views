@@ -1,8 +1,8 @@
 # 10/5/22
-# https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev5&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={"vocalizations":"sha1://e4e1b276e159fe8408bad4591fa7ff62c8c52748"}&label=test%20annotate%20vocalizations
+# https://figurl.org/f?v=gs://figurl/neurostatslab-views-1dev6&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={"vocalizations":"sha1://e4e1b276e159fe8408bad4591fa7ff62c8c52748"}&label=test%20annotate%20vocalizations
 
 # with some annotation
-# https://www.figurl.org/f?v=gs://figurl/neurostatslab-views-1dev5&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={%22vocalizations%22:%22jot://REjqDRLvCmnN%22,%22poses%22:%22jot://IaqZTbkEMZMQ%22}&label=test%20annotate%20vocalizations
+# https://www.figurl.org/f?v=gs://figurl/neurostatslab-views-1dev6&d=sha1://e1e81ecd1d3b28ac8284ed0d51684b6c3a4bfdfc&s={%22vocalizations%22:%22jot://REjqDRLvCmnN%22,%22poses%22:%22jot://IaqZTbkEMZMQ%22}&label=test%20annotate%20vocalizations
 
 from typing import Union
 import numpy as np
@@ -82,7 +82,7 @@ def main():
     state = {
         'vocalizations': vocalizations_state_uri
     }
-    F = fig.Figure(data=data, view_url='gs://figurl/neurostatslab-views-1dev5', state=state)
+    F = fig.Figure(data=data, view_url='gs://figurl/neurostatslab-views-1dev6', state=state)
     print(F.url(label='test annotate vocalizations'))
 
 def _auto_detect_vocalizations(spectrogram: np.array, *, sampling_frequency: float):
