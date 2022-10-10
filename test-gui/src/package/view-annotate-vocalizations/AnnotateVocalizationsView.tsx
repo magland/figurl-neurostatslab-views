@@ -55,22 +55,24 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 		}
 	}, [focusTime, vocalizations, vocalizationState, setSelectedVocalizationId])
 	const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback((e) => {
-		if (e.key === 'n') {
-			selectNextVocalization()
-		}
-		else if (e.key === 'p') {
-			selectPreviousVocalization()
-		}
-		else if (e.key === 'r') {
-			selectRandomVocalizationWithoutPose()
-		}
-		else if (e.key === 'a') {
-			if (!selectedVocalization) return
-			addVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
-		}
-		else if (e.key === 'u') {
-			if (!selectedVocalization) return
-			removeVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
+		if ((!e.ctrlKey) && (!e.shiftKey)) {
+			if (e.key === 'n') {
+				selectNextVocalization()
+			}
+			else if (e.key === 'p') {
+				selectPreviousVocalization()
+			}
+			else if (e.key === 'r') {
+				selectRandomVocalizationWithoutPose()
+			}
+			else if (e.key === 'a') {
+				if (!selectedVocalization) return
+				addVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
+			}
+			else if (e.key === 'u') {
+				if (!selectedVocalization) return
+				removeVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
+			}
 		}
 	}, [selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, selectedVocalization, removeVocalizationLabel])
 	return (

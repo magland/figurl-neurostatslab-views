@@ -124,6 +124,20 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 		return true
 	}, [saving, userId])
 
+	useEffect(() => {
+		const listener = (e: BeforeUnloadEvent) => {
+			if (!saveAsJotEnabled) {
+				return undefined
+			}
+			e.preventDefault()
+			e.returnValue = ''
+		}
+		window.addEventListener("beforeunload", listener)
+		return () => {
+			window.removeEventListener("beforeunload", listener)
+		}
+	}, [saveAsJotEnabled])
+
 	const handleExportAsJson = useCallback(() => {
 		if (!object) return
 		const x = JSONStringifyDeterministic(object)
