@@ -7,7 +7,7 @@ import ControlWidget from "./ControlWidget";
 import SpectrogramWidget from "./SpectrogramWidget";
 import { timeIntervalForVocalization } from "./VocalizationsTable";
 
-type Props ={
+type Props = {
 	data: AnnotateVocalizationsViewData
 	width: number
 	height: number
