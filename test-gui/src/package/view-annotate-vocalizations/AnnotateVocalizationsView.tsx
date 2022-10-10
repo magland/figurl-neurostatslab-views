@@ -15,7 +15,7 @@ type Props ={
 
 const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, height}) => {
 	const {spectrogram, video} = data
-	const {vocalizations, setSelectedVocalizationId, vocalizationState, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, selectedVocalization, removeVocalizationLabel} = useVocalizations()
+	const {vocalizations, setSelectedVocalizationId, vocalizationState, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, selectedVocalization, removeVocalizationLabel} = useVocalizations()
 	const {focusTime} = useTimeFocus()
 	const {annotationDispatch} = useContext(AnnotationContext)
 	const samplingFrequencies = useMemo(() => ({
@@ -35,8 +35,8 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 						annotationId: v.vocalizationId,
 						label: '',
 						timeIntervalSec,
-						fillColor: v.labels.includes('accept') ? 'rgb(180, 255, 180)' : 'rgb(245, 240, 200)',
-						strokeColor: v.labels.includes('accept') ? 'rgb(150, 255, 150)' : 'rgb(235, 230, 200)'
+						fillColor: v.labels.includes('accept') ? ((v.pose && v.pose.points.length >= 2) ? 'rgb(180, 255, 180)' : 'rgb(255, 255, 180)') : 'rgb(245, 240, 200)',
+						strokeColor: v.labels.includes('accept') ? ((v.pose && v.pose.points.length >= 2) ? 'rgb(255, 255, 150)' : 'rgb(150, 255, 150)') : 'rgb(235, 230, 200)'
 					}
 				})
 			}
@@ -61,6 +61,9 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 		else if (e.key === 'p') {
 			selectPreviousVocalization()
 		}
+		else if (e.key === 'r') {
+			selectRandomVocalizationWithoutPose()
+		}
 		else if (e.key === 'a') {
 			if (!selectedVocalization) return
 			addVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
@@ -69,7 +72,7 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 			if (!selectedVocalization) return
 			removeVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
 		}
-	}, [selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, selectedVocalization, removeVocalizationLabel])
+	}, [selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, selectedVocalization, removeVocalizationLabel])
 	return (
 		<div
 			onKeyDown={handleKeyDown}

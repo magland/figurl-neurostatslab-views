@@ -11,7 +11,7 @@ type Props ={
 }
 
 const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) => {
-	const {addVocalization, removeVocalization, addVocalizationLabel, removeVocalizationLabel, setSelectedVocalizationId, selectedVocalization, selectNextVocalization, selectPreviousVocalization, vocalizationState, addVocalizationLabelToAll} = useVocalizations()
+	const {addVocalization, removeVocalization, addVocalizationLabel, removeVocalizationLabel, setSelectedVocalizationId, selectedVocalization, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, vocalizationState, addVocalizationLabelToAll} = useVocalizations()
 	const {focusTimeInterval, focusTime} = useTimeFocus()
 	const focusFrameInterval = useMemo(() => {
 		if (!vocalizationState) return undefined
@@ -55,6 +55,9 @@ const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) =
 		if (!selectedVocalization) return
 		removeVocalization(selectedVocalization.vocalizationId)
 	}, [removeVocalization, selectedVocalization])
+	const handleRandomVocalizationWithoutPose = useCallback(() => {
+		selectRandomVocalizationWithoutPose()
+	}, [selectRandomVocalizationWithoutPose])
 	return (
 		<div>
 			<h3>Selected time interval</h3>
@@ -96,6 +99,9 @@ const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) =
 					<div>None selected</div>
 				)
 			}
+			<div>
+				<Button onClick={handleRandomVocalizationWithoutPose}>Random vocalization w/o pose</Button>
+			</div>
 			<hr />
 			{
 				focusTime !== undefined && (
@@ -114,6 +120,7 @@ const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) =
 			<ul>
 				<li>n: select next vocalization</li>
 				<li>p: select previous vocalization</li>
+				<li>r: select random vocalization w/o pose</li>
 				<li>a: accept vocalization</li>
 				<li>u: unaccept vocalization</li>
 			</ul>

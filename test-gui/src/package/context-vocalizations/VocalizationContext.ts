@@ -77,10 +77,12 @@ export const vocalizationReducer = (s: VocalizationState, a: VocalizationAction)
         }
     }
     else if (a.type === 'addPosePoint') {
-        return {
+        const s2 = {
             ...s,
             vocalizations: s.vocalizations.map(v => (v.vocalizationId === a.vocalizationId) ? {...v, pose: addPosePoint(v.pose, a.point)} : v)
         }
+        // also accept it
+        return vocalizationReducer(s2, {type: 'addVocalizationLabel', vocalizationId: a.vocalizationId, label: 'accept'})
     }
     else if (a.type === 'movePosePoint') {
         return {
@@ -221,6 +223,15 @@ export const useVocalizations = () => {
         if (nextIndex >= vocalizations.length) return
         setSelectedVocalizationId(vocalizations[nextIndex].vocalizationId)
 	}, [selectedVocalization, vocalizations, setSelectedVocalizationId])
+    const selectRandomVocalizationWithoutPose = useCallback(() => {
+        const candidates = vocalizations.filter(v => ((!v.pose) || (v.pose.points.length < 2)))
+        if (candidates.length === 0) {
+            console.warn('No candidate vocalizations without pose')
+            return
+        }
+        const ii = randomInt(0, candidates.length)
+        setSelectedVocalizationId(candidates[ii].vocalizationId)
+    }, [vocalizations, setSelectedVocalizationId])
     const addVocalizationLabel = useCallback((vocalizationId: string, label: string) => {
         vocalizationDispatch && vocalizationDispatch({type: 'addVocalizationLabel', vocalizationId, label})
     }, [vocalizationDispatch])
@@ -256,6 +267,7 @@ export const useVocalizations = () => {
         setSelectedVocalizationId,
         selectPreviousVocalization,
         selectNextVocalization,
+        selectRandomVocalizationWithoutPose,
         addVocalizationLabel,
         addVocalizationLabelToAll,
         removeVocalizationLabel,
@@ -265,7 +277,11 @@ export const useVocalizations = () => {
         removePose,
         setBox,
         box
-    }), [vocalizations, addVocalization, addVocalizationLabelToAll, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizationState, setPose, addPosePoint, movePosePoint, removePose, setBox, box])
+    }), [vocalizations, addVocalization, addVocalizationLabelToAll, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, removeVocalizationLabel, vocalizationState, setPose, addPosePoint, movePosePoint, removePose, setBox, box])
+}
+
+function randomInt(min: number, max: number) { // [min, max)
+    return Math.floor(Math.random() * (max - min) + min)
 }
 
 export default VocalizationContext

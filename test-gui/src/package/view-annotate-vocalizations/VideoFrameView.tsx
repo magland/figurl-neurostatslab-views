@@ -12,6 +12,8 @@ type Props ={
 
 const VideoFrameView: FunctionComponent<Props> = ({src, timeSec, width, height, affineTransform}) => {
 	const [srcUrl, setSrcUrl] = useState<string>()
+	const [seeking, setSeeking] = useState<boolean>(false)
+	const [refreshCode, setRefreshCode] = useState(0)
 	useEffect(() => {
 		if (src.startsWith('sha1://')) {
 			getFileDataUrl(src).then((url) => {
@@ -43,22 +45,29 @@ const VideoFrameView: FunctionComponent<Props> = ({src, timeSec, width, height, 
 		ctx.drawImage(v, (width - W2) / 2, (height - H2) / 2, W2, H2)
 		
 		ctx.restore()
-	}, [width, height, affineTransform])
+
+		if (seeking) {
+			ctx.strokeStyle = 'magenta'
+			ctx.strokeText('Loading...', 20, 20)
+		}
+	}, [width, height, affineTransform, seeking])
 	const video = useMemo(() => {
 		if (!srcUrl) return undefined
 		const v = document.createElement('video')
-		v.addEventListener('seeked', () => {
-			handleDrawVideoFrame(v)
+		v.addEventListener('seeked', (a) => {
+			setSeeking(false)
+			setRefreshCode(c => (c + 1))
 		})
 		v.src = srcUrl
 		return v
-	}, [srcUrl, handleDrawVideoFrame])
+	}, [srcUrl])
 	useEffect(() => {
 		video && handleDrawVideoFrame(video)
-	}, [video, handleDrawVideoFrame])
+	}, [video, seeking, refreshCode, handleDrawVideoFrame])
 	useEffect(() => {
 		if (!video) return
 		if (timeSec !== undefined) {
+			setSeeking(true)
 			video.currentTime = timeSec
 		}
 	}, [video, timeSec])
