@@ -36,7 +36,7 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 						label: '',
 						timeIntervalSec,
 						fillColor: v.labels.includes('accept') ? ((v.pose && v.pose.points.length >= 2) ? 'rgb(180, 255, 180)' : 'rgb(255, 255, 180)') : 'rgb(245, 240, 200)',
-						strokeColor: v.labels.includes('accept') ? ((v.pose && v.pose.points.length >= 2) ? 'rgb(255, 255, 150)' : 'rgb(150, 255, 150)') : 'rgb(235, 230, 200)'
+						strokeColor: v.labels.includes('accept') ? ((v.pose && v.pose.points.length >= 2) ? 'rgb(180, 255, 100)' : 'rgb(255, 255, 100)') : 'rgb(235, 230, 200)'
 					}
 				})
 			}
