@@ -20,7 +20,10 @@ type VocalizationAction = {
 } | {
     type: 'addVocalizationLabelToAll'
     label: string
-}| {
+} | {
+    type: 'removeVocalizationLabelFromAll'
+    label: string
+} | {
     type: 'removeVocalizationLabel'
     vocalizationId: string
     label: string

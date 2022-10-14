@@ -64,6 +64,12 @@ export const vocalizationReducer = (s: VocalizationState, a: VocalizationAction)
             vocalizations: s.vocalizations.map(v => ((addLabel(v, a.label))))
         }
     }
+    else if (a.type === 'removeVocalizationLabelFromAll') {
+        return {
+            ...s,
+            vocalizations: s.vocalizations.map(v => ((removeLabel(v, a.label))))
+        }
+    }
     else if (a.type === 'removeVocalizationLabel') {
         return {
             ...s,
@@ -238,6 +244,9 @@ export const useVocalizations = () => {
     const addVocalizationLabelToAll = useCallback((label: string) => {
         vocalizationDispatch && vocalizationDispatch({type: 'addVocalizationLabelToAll', label})
     }, [vocalizationDispatch])
+    const removeVocalizationLabelFromAll = useCallback((label: string) => {
+        vocalizationDispatch && vocalizationDispatch({type: 'removeVocalizationLabelFromAll', label})
+    }, [vocalizationDispatch])
     const removeVocalizationLabel = useCallback((vocalizationId: string, label: string) => {
         vocalizationDispatch && vocalizationDispatch({type: 'removeVocalizationLabel', vocalizationId, label})
     }, [vocalizationDispatch])
@@ -270,6 +279,7 @@ export const useVocalizations = () => {
         selectRandomVocalizationWithoutPose,
         addVocalizationLabel,
         addVocalizationLabelToAll,
+        removeVocalizationLabelFromAll,
         removeVocalizationLabel,
         setPose,
         addPosePoint,
@@ -277,7 +287,7 @@ export const useVocalizations = () => {
         removePose,
         setBox,
         box
-    }), [vocalizations, addVocalization, addVocalizationLabelToAll, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, removeVocalizationLabel, vocalizationState, setPose, addPosePoint, movePosePoint, removePose, setBox, box])
+    }), [vocalizations, addVocalization, addVocalizationLabelToAll, removeVocalizationLabelFromAll, removeVocalization, setVocalizationLabel, selectedVocalization, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, removeVocalizationLabel, vocalizationState, setPose, addPosePoint, movePosePoint, removePose, setBox, box])
 }
 
 function randomInt(min: number, max: number) { // [min, max)

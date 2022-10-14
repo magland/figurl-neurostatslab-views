@@ -11,7 +11,7 @@ type Props ={
 }
 
 const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) => {
-	const {addVocalization, removeVocalization, addVocalizationLabel, removeVocalizationLabel, setSelectedVocalizationId, selectedVocalization, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, vocalizationState, addVocalizationLabelToAll} = useVocalizations()
+	const {addVocalization, removeVocalization, addVocalizationLabel, removeVocalizationLabel, setSelectedVocalizationId, selectedVocalization, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, vocalizationState, addVocalizationLabelToAll, removeVocalizationLabelFromAll} = useVocalizations()
 	const {focusTimeInterval, focusTime} = useTimeFocus()
 	const focusFrameInterval = useMemo(() => {
 		if (!vocalizationState) return undefined
@@ -113,6 +113,9 @@ const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) =
 			<hr />
 			<div>
 				<Button onClick={() => addVocalizationLabelToAll('accept')}>Accept all vocalizations</Button>
+			</div>
+			<div>
+				<Button onClick={() => removeVocalizationLabelFromAll('accept')}>Unaccept all vocalizations</Button>
 			</div>
 			<hr />
 			<h2>Shortcuts</h2>

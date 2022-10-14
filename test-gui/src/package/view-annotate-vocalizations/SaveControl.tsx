@@ -146,12 +146,11 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 
 	return (
 		<div>
-			<p>URI: {uri}</p>
 			<div>
 				{
 					uriStartsWithJot && (
 						<span>
-							<Button style={buttonStyle} disabled={!saveAsJotEnabled} onClick={() => handleSaveJot({new: false})}>Save as {uri}</Button>
+							<Button style={{...buttonStyle, color: saveAsJotEnabled ? 'green' : 'gray', fontWeight: 'bold', fontSize: 18}} disabled={!saveAsJotEnabled} onClick={() => handleSaveJot({new: false})}>SAVE CHANGES</Button>
 							{userId && <Hyperlink href={`https://jot.figurl.org/jot/${jotId}`} target="_blank">manage</Hyperlink>}
 						</span>
 					)
@@ -159,7 +158,7 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 				<br />
 				<Button style={buttonStyle} disabled={!saveSnapshotEnabled} onClick={handleSaveSnapshot}>Save as snapshot</Button>
 				<br />
-				<Button style={buttonStyle} disabled={!saveAsNewJotEnabled} onClick={() => handleSaveJot({new: true})}>Save as new jot</Button>
+				<Button style={buttonStyle} disabled={!saveAsNewJotEnabled} onClick={() => handleSaveJot({new: true})}>Save as new rewritable</Button>
 				<br />
 				{
 					saving && 'Saving...'
@@ -171,6 +170,8 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 			{errorString && <div style={{color: 'red'}}>{errorString}</div>}
 			<hr />
 			<Button onClick={handleExportAsJson}>Export as JSON</Button>
+			<hr />
+			<p>URI: {uri}</p>
 		</div>
 	)
 }
