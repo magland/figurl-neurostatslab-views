@@ -65,7 +65,7 @@ def prepare_video_ogv(dirname: str):
 @click.option('--video-sr', default='30', help='Video sampling rate in Hz')
 @click.option('--audio-sr', default='125000', help='Audio sampling rate in Hz')
 @click.option('--duration-sec', default='300', help='Duration to extract (seconds)')
-@click.option('--vocalizations-gh-uri', default='', help='Write auto-generated vocalizations to this Github URI (e.g., github://user/repo/folder/vocalizations.json)')
+@click.option('--vocalizations-gh-uri', default='', help='Write auto-generated vocalizations to this Github URI (e.g., gh://user/repo/folder/vocalizations.json)')
 def create_figurl(*, dirname: str, video_uri: str, video_dims: str, video_sr: str, audio_sr: str, duration_sec: str, vocalizations_gh_uri: str):
     if not video_uri:
         ogv_fname = _find_ogv_file_in_dir(dirname)
@@ -202,7 +202,7 @@ def _auto_detect_vocalizations(spectrogram: np.array, *, sampling_frequency: flo
     return vocalizations
 
 def _parse_github_uri(uri: str):
-    if not uri.startswith('github://'):
+    if not uri.startswith('gh://'):
         raise Exception(f'Invalid github URI: {uri}')
     a = uri.split('/')
     if len(a) < 6:
