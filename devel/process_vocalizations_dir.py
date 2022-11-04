@@ -18,12 +18,11 @@ Run:
 python process_vocalizationd_dir --prepare-video-ogv <dirname>
 
 This will print instructions for creating the .ogv file and uploading it to kachery-cloud.
-You should then copy the video URI (sha1://...) for use in the next step.
 
 Step 2: Create the figURL
 
 Using default options, run:
-python process_vocalizationd_dir --create-figurl --video-uri sha1://... <dirname>
+python process_vocalizationd_dir --create-figurl sha1://... <dirname>
 
 For more info run:
 python process_vocalizationd_dir --create-figurl --help
@@ -61,12 +60,20 @@ def prepare_video_ogv(dirname: str):
 
 @click.command(help="Create figURL")
 @click.argument('dirname')
-@click.option('--video-uri', required=True, help='Kachery URI for the video .ogv file')
+@click.option('--video-uri', default='', help='Optional kachery URI for the video .ogv file. If not provided, it will be determined from the .ogv file in the dataset directory.')
 @click.option('--video-dims', default='512,640', help='Comma-separated pixel dimensions of the video in format height,width')
 @click.option('--video-sr', default='30', help='Video sampling rate in Hz')
 @click.option('--audio-sr', default='125000', help='Audio sampling rate in Hz')
 @click.option('--duration-sec', default='300', help='Duration to extract (seconds)')
-def create_figurl(*, dirname: str, video_uri: str, video_dims: str, video_sr: str, audio_sr: str, duration_sec: str):
+@click.option('--vocalizations-gh-uri', default='', help='Write auto-generated vocalizations to this Github URI (e.g., github://user/repo/folder/vocalizations.json)')
+def create_figurl(*, dirname: str, video_uri: str, video_dims: str, video_sr: str, audio_sr: str, duration_sec: str, vocalizations_gh_uri: str):
+    if not video_uri:
+        ogv_fname = _find_ogv_file_in_dir(dirname)
+        # video_uri = kcl.store_file_local(ogv_fname) # don't auto-upload, instead just compute the hash, and we assume it was uploaded in the previous step (better to make user do this explicitly)
+        from kachery_cloud.store_file_local import _compute_file_hash
+        sha1 = _compute_file_hash(ogv_fname, algorithm='sha1')
+        video_uri = f'sha1://{sha1}'
+
     video_dims = [int(video_dims.split(',')[0]), int(video_dims.split(',')[1])]
     video_sr = float(video_sr)
     audio_sr = float(audio_sr)
@@ -134,7 +141,16 @@ def create_figurl(*, dirname: str, video_uri: str, video_dims: str, video_sr: st
         'samplingFrequency': sr_spectrogram,
         'vocalizations': auto_vocalizations
     }
-    vocalizations_state_uri = kcl.store_json(vocalizations_state)
+
+    if vocalizations_gh_uri:
+        import fitgit
+        C = fitgit.Commit()
+        user, repo, branch, filename = _parse_github_uri(vocalizations_gh_uri)
+        C.add_json_file(filename, vocalizations_state)
+        C.push_to_github(f'{user}/{repo}', branch=branch, message='Auto set vocalizations')
+        vocalizations_state_uri = vocalizations_gh_uri
+    else:
+        vocalizations_state_uri = kcl.store_json(vocalizations_state)
     state = {
         'vocalizations': vocalizations_state_uri
     }
@@ -185,6 +201,26 @@ def _auto_detect_vocalizations(spectrogram: np.array, *, sampling_frequency: flo
                     vocalization_last_active_frame = None
     return vocalizations
 
+def _parse_github_uri(uri: str):
+    if not uri.startswith('github://'):
+        raise Exception(f'Invalid github URI: {uri}')
+    a = uri.split('/')
+    if len(a) < 6:
+        raise Exception(f'Invalid github URI: {uri}')
+    user_name = a[2]
+    repo_name = a[3]
+    branch_name = a[4]
+    file_name = '/'.join(a[5:])
+    return user_name, repo_name, branch_name, file_name
+
+def _find_ogv_file_in_dir(dirname: str):
+    fnames = os.listdir(dirname)
+    ogv_fnames = [f for f in fnames if f.endswith('.ogv')]
+    if len(ogv_fnames) == 0:
+        raise Exception(f'No .ogv file found in directory: {dirname}')
+    if len(ogv_fnames) > 1:
+        raise Exception(f'More than one .ogv file found in directory: {dirname}')
+    return f'{dirname}/{ogv_fnames[0]}'
 
 cli.add_command(prepare_video_ogv)
 cli.add_command(create_figurl)
