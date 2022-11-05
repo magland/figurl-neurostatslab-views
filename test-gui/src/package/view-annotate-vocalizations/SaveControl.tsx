@@ -130,7 +130,6 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 					console.warn('Empty state')
 					return
 				}
-				console.log('--- got file data', uri, x)
 				setObject(x)
 				setSaveState({
 					savedObjectJson: JSONStringifyDeterministic(x),
@@ -139,6 +138,7 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 			}).catch((err: Error) => {
 				console.warn('Problem getting state')
 				console.warn(err)
+				setErrorString(`Error getting ${uri}`)
 			})
 		}
 		first.current = false
