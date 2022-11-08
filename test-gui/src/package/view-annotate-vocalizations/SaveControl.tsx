@@ -4,8 +4,10 @@ import { getFileData, storeFileData, storeGithubFileData, useSignedIn } from "@f
 import { Button } from "@material-ui/core";
 import { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EditGithubUriControl from './EditGithubUriControl';
+import FormatUri from './FormatUri';
 
 type Props ={
+	fallbackUri?: string
 	uri: string | undefined
 	setUri: (uri: string) => void
 	object: {[key: string]: any} | undefined
@@ -17,7 +19,7 @@ type SaveState = {
 	savedUri?: string
 }
 
-const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject}) => {
+const SaveControl: FunctionComponent<Props> = ({fallbackUri, uri, setUri, object, setObject}) => {
 	const [errorString, setErrorString] = useState<string>('')
 
 	const [saving, setSaving] = useState<boolean>(false)
@@ -136,13 +138,34 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 					savedUri: uri
 				})
 			}).catch((err: Error) => {
-				console.warn('Problem getting state')
-				console.warn(err)
-				setErrorString(`Error getting ${uri}`)
+				if (fallbackUri) {
+					getFileData(fallbackUri, () => {}).then((y) => {
+						if (!y) {
+							console.warn('Empty state 2')
+							return
+						}
+						setErrorString(`Unable to load primary URI (${uri}), using fallback (${fallbackUri})`)
+						setObject(y)
+						setSaveState({
+							savedObjectJson: JSONStringifyDeterministic(y),
+							savedUri: fallbackUri
+						})
+					}).catch((err2: Error) => {
+						console.warn('Problem getting state 2')
+						console.warn(err2)
+						setErrorString(`Error getting ${fallbackUri}`)	
+					})
+				}
+				else {
+					console.warn('Problem getting state')
+					console.warn(err)
+					setErrorString(`Error getting ${uri}`)
+				}
+				
 			})
 		}
 		first.current = false
-	}, [uri, first, setObject])
+	}, [uri, first, setObject, fallbackUri])
 
 	const uriStartsWithJot = (uri || '').startsWith('jot://')
 	const uriStartsWithGithub = (uri || '').startsWith('gh://')
@@ -263,7 +286,7 @@ const SaveControl: FunctionComponent<Props> = ({uri, setUri, object, setObject})
 				}
 
 				<div style={{paddingLeft: 8, fontSize: 12}}>
-					URI: {uri}
+					URI: <FormatUri uri={uri} />
 				</div>
 				
 			</div>
