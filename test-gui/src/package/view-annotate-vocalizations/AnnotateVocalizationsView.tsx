@@ -1,9 +1,11 @@
 import { Splitter } from "@figurl/core-views";
+import { useUrlState } from "@figurl/interface";
 import { AnnotationContext, useTimeFocus } from "@figurl/timeseries-views";
 import { FunctionComponent, KeyboardEventHandler, useCallback, useContext, useEffect, useMemo } from "react";
 import { useVocalizations } from "../context-vocalizations";
 import { AnnotateVocalizationsViewData } from "./AnnotateVocalizationsViewData";
 import ControlWidget from "./ControlWidget";
+import ControlWidgetDev from "./ControlWidgetDev";
 import SpectrogramWidget from "./SpectrogramWidget";
 import { timeIntervalForVocalization } from "./VocalizationsTable";
 
@@ -18,6 +20,7 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 	const {vocalizations, setSelectedVocalizationId, vocalizationState, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, selectedVocalization, removeVocalizationLabel} = useVocalizations()
 	const {focusTime} = useTimeFocus()
 	const {annotationDispatch} = useContext(AnnotationContext)
+	const {urlState, updateUrlState} = useUrlState()
 	const samplingFrequencies = useMemo(() => ({
 		audio: spectrogram.samplingFrequency,
 		video: video?.samplingFrequency || 1
@@ -73,8 +76,11 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 				if (!selectedVocalization) return
 				removeVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
 			}
+			else if (e.key === 'd') {
+				updateUrlState({dev: (urlState.dev !== true)})
+			}
 		}
-	}, [selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, selectedVocalization, removeVocalizationLabel])
+	}, [selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, selectedVocalization, removeVocalizationLabel, urlState, updateUrlState])
 	return (
 		<div
 			onKeyDown={handleKeyDown}
@@ -92,12 +98,23 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 					height={0}
 					spectrogram={spectrogram}
 				/>
-				<ControlWidget
-					width={0}
-					height={0}
-					video={video}
-					samplingFrequencies={samplingFrequencies}
-				/>
+				{
+					urlState.dev !== true ? (
+						<ControlWidget
+							width={0}
+							height={0}
+							video={video}
+							samplingFrequencies={samplingFrequencies}
+						/>
+					) : (
+						<ControlWidgetDev
+							width={0}
+							height={0}
+							video={video}
+							samplingFrequencies={samplingFrequencies}
+						/>
+					)
+				}
 			</Splitter>
 		</div>
 	)

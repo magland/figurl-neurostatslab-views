@@ -126,6 +126,7 @@ const CurrentVocalizationControl: FunctionComponent<Props> = ({width, height}) =
 				<li>r: select random vocalization w/o pose</li>
 				<li>a: accept vocalization</li>
 				<li>u: unaccept vocalization</li>
+				<li>d: toggle dev layout</li>
 			</ul>
 			<h4>Camera</h4>
 			<ul>
