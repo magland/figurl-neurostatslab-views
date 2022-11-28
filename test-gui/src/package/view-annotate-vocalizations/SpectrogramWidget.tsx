@@ -109,7 +109,7 @@ const SpectrogramWidget: FunctionComponent<Props> = ({width, height, spectrogram
 }
 
 const colorForSpectrogramValue = (v: number) => {
-	return v > 0 ? [v * 10, 0, 0, v * 10] : [0, 0, 0, 0]
+	return v > 0 ? [0, 0, 0, v * 10] : [0, 0, 0, 0]
 }
 
 export default SpectrogramWidget
