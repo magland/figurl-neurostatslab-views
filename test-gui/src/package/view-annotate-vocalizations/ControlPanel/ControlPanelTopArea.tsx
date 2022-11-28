@@ -1,15 +1,18 @@
-import { Hyperlink } from "@figurl/core-views";
 import { FunctionComponent } from "react";
+import AnnotationsTable from "./AnnotationsTable";
 
 type Props ={
 	width: number
 	height: number
 }
 
-const ControlPanelTopArea: FunctionComponent<Props> = () => {
+const ControlPanelTopArea: FunctionComponent<Props> = ({width, height}) => {
 	return (
 		<div>
-			Control panel top area. <Hyperlink href="https://user-images.githubusercontent.com/3679296/202719295-e69aa895-7a67-4acc-a795-c1ca70d0a783.png" target="_blank">See this wireframe</Hyperlink>
+			<AnnotationsTable
+				width={width}
+				height={height}
+			/>
 		</div>
 	)
 }

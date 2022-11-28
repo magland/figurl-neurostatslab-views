@@ -5,7 +5,7 @@ import { FunctionComponent, KeyboardEventHandler, useCallback, useContext, useEf
 import { useVocalizations } from "../context-vocalizations";
 import { AnnotateVocalizationsViewData } from "./AnnotateVocalizationsViewData";
 import ControlWidget from "./ControlWidget";
-import ControlWidgetDev from "./ControlWidgetDev";
+import ControlWidgetOld from "./ControlWidgetOld";
 import SpectrogramWidget from "./SpectrogramWidget";
 import { timeIntervalForVocalization } from "./VocalizationsTable";
 
@@ -99,15 +99,15 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 					spectrogram={spectrogram}
 				/>
 				{
-					urlState.dev !== true ? (
-						<ControlWidget
+					urlState.dev === true ? (
+						<ControlWidgetOld
 							width={0}
 							height={0}
 							video={video}
 							samplingFrequencies={samplingFrequencies}
 						/>
 					) : (
-						<ControlWidgetDev
+						<ControlWidget
 							width={0}
 							height={0}
 							video={video}

@@ -3,9 +3,7 @@ import { useTimeFocus } from '@figurl/timeseries-views';
 import { FunctionComponent, useMemo } from 'react';
 import { useVocalizations } from '../context-vocalizations';
 import CameraView from './CameraView';
-import CurrentVocalizationControl from './CurrentVocalizationControl';
-import SavePanel from './SavePanel';
-import VocalizationsTable from './VocalizationsTable';
+import ControlPanel from './ControlPanel/ControlPanel';
 
 type Props = {
     width: number
@@ -41,60 +39,23 @@ const ControlWidget: FunctionComponent<Props> = ({width, height, video, sampling
             width={width}
             height={height}
             initialPosition={500}
+            adjustable={false}
         >
-            <VocalizationsTable
+            <ControlPanel
                 width={0}
                 height={0}
             />
-            <Splitter
-                width={0}
-                height={0}
-                initialPosition={300}
-            >
-                <CurrentVocalizationControl
-                    width={0}
-                    height={0}
-                />
-                <Splitter
-                    width={0}
-                    height={0}
-                    initialPosition={300}
-                >
-                    <SavePanel
-                        videoSamplingFrequency={samplingFrequencies.video}
+            {
+                video ? (
+                    <CameraView
+                        width={0}
+                        height={0}
+                        video={video}
+                        canEditPose={canEditPose}
                     />
-                    {
-                        video ? (
-                            <CameraView
-                                width={0}
-                                height={0}
-                                video={video}
-                                canEditPose={canEditPose}
-                            />
-                        ) : <div />
-                    }
-                </Splitter>
-            </Splitter>
+                ) : <div />
+            }
         </Splitter>
-        // <div style={{margin: 20}}>
-        //     <h3>Vocalizations</h3>
-        //     <hr />
-
-        //     <h4>Time intervals</h4>
-        //     <pre>(Use shift+click)</pre>
-        //     Selected (sec): {focusTimeIntervalSeconds !== undefined ? formatTimeInterval(focusTimeIntervalSeconds) : 'undefined'}
-        //     <Button disabled={focusTimeIntervalSeconds === undefined} onClick={handleAddTimeInterval}>Add time interval</Button>
-        //     <div style={{overflowY: 'auto', height: 160}}>
-        //         <NiceTable
-        //             rows={timeIntervalRows}
-        //             columns={timeIntervalColumns}
-        //             onDeleteRow={handleDelete}
-        //         />
-        //     </div>
-        //     <hr />
-
-        //     <Button disabled={!saveEnabled} onClick={handleSave}>Save vocalizations</Button>
-        // </div>
     )
 }
 
