@@ -1,16 +1,21 @@
+import { randomAlphaString } from "@figurl/core-utils";
 import { getFileData, storeFileData, storeGithubFileData, useUrlState } from "@figurl/interface";
+import { useTimeFocus } from "@figurl/timeseries-views";
 import { FunctionComponent, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useVocalizations, VocalizationContext } from "../../context-vocalizations";
 import './ControlPanel.css';
 import ControlPanelBottomArea from "./ControlPanelBottomArea";
 import ControlPanelTopArea from "./ControlPanelTopArea";
+import HelpWindow from "./HelpWindow";
+import ModalWindow from "./ModalWindow";
+import useModalDialog from "./useModalDialog";
 
 type Props ={
 	width: number
 	height: number
 }
 
-export type Command = 'save-to-github' | 'save-snapshot' | 'export-as-json' | 'prev' | 'next' | 'first' | 'last' | 'random-without-pose' | 'accept-vocalization' | 'unaccept-vocalization' | 'accept-all-vocalizations' | 'unaccept-all-vocalizations'
+export type Command = 'save-to-github' | 'save-snapshot' | 'export-as-json' | 'prev' | 'next' | 'first' | 'last' | 'random-without-pose' | 'accept-vocalization' | 'unaccept-vocalization' | 'accept-all-vocalizations' | 'unaccept-all-vocalizations' | 'add-vocalization' | 'delete-vocalization' | 'help'
 
 type SaveState = {
 	savedObjectJson?: string
@@ -19,7 +24,7 @@ type SaveState = {
 
 const ControlPanel: FunctionComponent<Props> = ({width, height}) => {
 	const [errorString, setErrorString] = useState<string>('')
-	const {vocalizationState, selectedVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizations, selectNextVocalization, selectPreviousVocalization, selectFirstVocalization, selectLastVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabelToAll, removeVocalizationLabelFromAll} = useVocalizations()
+	const {vocalizationState, selectedVocalization, addVocalizationLabel, removeVocalizationLabel, vocalizations, selectNextVocalization, selectPreviousVocalization, selectFirstVocalization, selectLastVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabelToAll, removeVocalizationLabelFromAll, removeVocalization, addVocalization} = useVocalizations()
     const {vocalizationDispatch} = useContext(VocalizationContext)
     const {urlState, updateUrlState} = useUrlState()
 
@@ -28,6 +33,16 @@ const ControlPanel: FunctionComponent<Props> = ({width, height}) => {
 		vocalizations.filter(v => (v.labels.includes('accept') && v.pose)).length
 	), [vocalizations])
 	const label = `${numAnnotatedVocalizations}/${numVocalizations} annotated`
+
+	const {focusTimeInterval} = useTimeFocus()
+	const focusFrameInterval = useMemo(() => {
+		if (!vocalizationState) return undefined
+		if (!focusTimeInterval) return undefined
+		return [
+			Math.floor(focusTimeInterval[0] * vocalizationState.samplingFrequency),
+			Math.ceil(focusTimeInterval[1] * vocalizationState.samplingFrequency)
+		] as [number, number]
+	}, [vocalizationState, focusTimeInterval])
 
 	const uri = urlState['vocalizations'] || ''
 	const hasGithubUri = uri.startsWith('gh://')
@@ -123,6 +138,8 @@ const ControlPanel: FunctionComponent<Props> = ({width, height}) => {
 		})()
 	}, [object, updateUrlState, uri])
 
+	const {visible: helpVisible, handleOpen: handleOpenHelp, handleClose: handleCloseHelp} = useModalDialog()
+
 	const handleCommand = useCallback((c: Command) => {
 		if (c === 'export-as-json') {
 			handleExportAsJson()
@@ -168,20 +185,46 @@ const ControlPanel: FunctionComponent<Props> = ({width, height}) => {
 		else if (c === 'random-without-pose') {
 			selectRandomVocalizationWithoutPose()
 		}
-	}, [handleExportAsJson, addVocalizationLabel, removeVocalizationLabel, selectedVocalization, handleSaveToGithub, selectNextVocalization, selectPreviousVocalization, selectFirstVocalization, selectLastVocalization, selectRandomVocalizationWithoutPose, handleSaveSnapshot, addVocalizationLabelToAll, removeVocalizationLabelFromAll])
+		else if (c === 'add-vocalization') {
+			if (!focusFrameInterval) return
+			const id = randomAlphaString(10)
+			addVocalization({
+				vocalizationId: id,
+				labels: ['accept'],
+				startFrame: focusFrameInterval[0],
+				endFrame: focusFrameInterval[1]
+			})
+		}
+		else if (c === 'delete-vocalization') {
+			if (selectedVocalization === undefined) return
+			removeVocalization(selectedVocalization.vocalizationId)
+		}
+		else if (c === 'help') {
+			handleOpenHelp()
+		}
+	}, [handleExportAsJson, addVocalizationLabel, removeVocalizationLabel, selectedVocalization, handleSaveToGithub, selectNextVocalization, selectPreviousVocalization, selectFirstVocalization, selectLastVocalization, selectRandomVocalizationWithoutPose, handleSaveSnapshot, addVocalizationLabelToAll, removeVocalizationLabelFromAll, removeVocalization, focusFrameInterval, addVocalization, handleOpenHelp])
 
 	const margin = 10
 	const spacing = 20
-	const bottomHeight = Math.min(180, (height - 2 * margin - spacing) * 2 / 3)
+	const bottomHeight = Math.min(220, (height - 2 * margin - spacing) * 2 / 3)
 	const topHeight = (height - 2 * margin - spacing) - bottomHeight
 	return (
-		<div className="ControlPanel" style={{position: 'absolute', width, height}}>
+		<div
+			className="ControlPanel"
+			style={{position: 'absolute', width, height}}
+		>
 			<div style={{position: 'absolute', left: margin, top: margin, width: width - 2 * margin, height: topHeight}}>
 				<ControlPanelTopArea width={width - 2 * margin} height={topHeight} />
 			</div>
 			<div style={{position: 'absolute', left: margin, top: margin + topHeight + spacing, width: width - 2 * margin, height: bottomHeight}}>
-				<ControlPanelBottomArea width={width - 2 * margin} height={bottomHeight} onCommand={handleCommand} errorString={errorString} saving={saving} dirty={dirty} hasGithubUri={hasGithubUri} selectedVocalization={selectedVocalization} label={label} />
+				<ControlPanelBottomArea width={width - 2 * margin} height={bottomHeight} onCommand={handleCommand} errorString={errorString} saving={saving} dirty={dirty} hasGithubUri={hasGithubUri} selectedVocalization={selectedVocalization} focusFrameInterval={focusFrameInterval} label={label} />
 			</div>
+			<ModalWindow
+				open={helpVisible}
+                onClose={handleCloseHelp}
+			>
+				<HelpWindow />
+			</ModalWindow>
 		</div>
 	)
 }

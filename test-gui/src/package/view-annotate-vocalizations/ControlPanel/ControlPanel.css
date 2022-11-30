@@ -17,3 +17,7 @@
 .ControlPanel button:active:enabled {
     background: #eedd00;
 }
+
+.HelpButton:hover {
+    color: blue;
+}

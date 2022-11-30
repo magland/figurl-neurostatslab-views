@@ -1,3 +1,4 @@
+import { Help } from "@material-ui/icons";
 import { FunctionComponent } from "react";
 import { Vocalization } from "../../context-vocalizations";
 import { Command } from "./ControlPanel";
@@ -11,29 +12,33 @@ type Props ={
 	dirty: boolean
 	hasGithubUri: boolean
 	selectedVocalization: Vocalization | undefined
+	focusFrameInterval?: [number, number]
 	label: string
 }
 
 const topRowHeight = 40
 const rowHeight = 60
+const rowHeight2 = 90
 
 const labelHeight = 16
 const spacing = 10
 const labelFontSize = 12
 
-const ControlPanelBottomArea: FunctionComponent<Props> = ({width, height, onCommand, errorString, saving, dirty, hasGithubUri, selectedVocalization, label}) => {
+const ControlPanelBottomArea: FunctionComponent<Props> = ({width, height, onCommand, errorString, saving, dirty, hasGithubUri, selectedVocalization, focusFrameInterval, label}) => {
 	return (
 		<div style={{position: 'absolute', width, height}}>
 			<div style={{position: 'absolute'}}>
 				<TopRow width={width} height={topRowHeight} label={label} onCommand={onCommand} />
 			</div>
 			<div style={{position: 'absolute', top: topRowHeight}}>
-				<SelectedVocalizationRow width={width} height={rowHeight} onCommand={onCommand} selectedVocalization={selectedVocalization} />
+				<SelectedVocalizationRow width={width} height={rowHeight2} onCommand={onCommand} selectedVocalization={selectedVocalization} focusFrameInterval={focusFrameInterval} />
 			</div>
-			<div style={{position: 'absolute', top: topRowHeight + rowHeight}}>
+			<div style={{position: 'absolute', top: topRowHeight + rowHeight2}}>
 				<SaveAnnotationsRow width={width} height={rowHeight} onCommand={onCommand} dirty={dirty} saving={saving} hasGithubUri={hasGithubUri} />
 			</div>
-			<div style={{position: 'absolute', top: topRowHeight + rowHeight * 2, fontSize: labelFontSize}}>
+			<div style={{position: 'absolute', top: topRowHeight + rowHeight2 + rowHeight, fontSize: labelFontSize}}>
+				<Help className="HelpButton" onClick={() => {onCommand('help')}} />
+				<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
 				{
 					saving ? (
 						<span>Saving...</span>
@@ -121,11 +126,17 @@ const SaveAnnotationsRow: FunctionComponent<{width: number, height: number, onCo
 	)
 }
 
-const SelectedVocalizationRow: FunctionComponent<{width: number, height: number, onCommand: (c: Command) => void, selectedVocalization: Vocalization | undefined}> = ({width, height, onCommand, selectedVocalization}) => {
+const SelectedVocalizationRow: FunctionComponent<{width: number, height: number, onCommand: (c: Command) => void, selectedVocalization: Vocalization | undefined, focusFrameInterval?: [number, number]}> = ({width, height, onCommand, selectedVocalization, focusFrameInterval}) => {
 	const W = (width - spacing * 5) / 4
+	const W2 = (width - spacing * 3) / 2
+	const buttonHeight = 25
 	const buttonStyle: React.CSSProperties = {
-		height: 25,
+		height: buttonHeight,
 		width: W
+	}
+	const buttonStyle2: React.CSSProperties = {
+		height: buttonHeight,
+		width: W2
 	}
 	return (
 		<div>
@@ -140,10 +151,18 @@ const SelectedVocalizationRow: FunctionComponent<{width: number, height: number,
 					<button disabled={!selectedVocalization || !selectedVocalization.labels.includes('accept')} onClick={() => onCommand('unaccept-vocalization')} style={buttonStyle}>Unaccept</button>
 				</div>
 				<div style={{position: 'absolute', left: spacing + W + spacing + W + spacing}}>
-					<button onClick={() => onCommand('accept-all-vocalizations')} style={buttonStyle}>Accept all</button>
+					<button disabled={!focusFrameInterval} onClick={() => onCommand('add-vocalization')} style={buttonStyle}>Add</button>
 				</div>
 				<div style={{position: 'absolute', left: spacing + W + spacing + W + spacing + W + spacing}}>
-					<button onClick={() => onCommand('unaccept-all-vocalizations')} style={buttonStyle}>Unaccept all</button>
+					<button disabled={!selectedVocalization} onClick={() => onCommand('delete-vocalization')} style={buttonStyle}>Delete</button>
+				</div>
+			</div>
+			<div style={{position: 'absolute', top: labelHeight + buttonHeight + 6, width}}>
+				<div style={{position: 'absolute', left: spacing}}>
+					<button onClick={() => onCommand('accept-all-vocalizations')} style={buttonStyle2}>Accept all</button>
+				</div>
+				<div style={{position: 'absolute', left: spacing + W2 + spacing}}>
+					<button onClick={() => onCommand('unaccept-all-vocalizations')} style={buttonStyle2}>Unaccept all</button>
 				</div>
 			</div>
 		</div>

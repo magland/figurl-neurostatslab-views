@@ -20,7 +20,7 @@ const columns: NiceTableColumn[] = [
     },
     {
         key: 'poseStatus',
-        label: 'Pose status'
+        label: 'Pose'
     }
 ]
 

@@ -174,7 +174,7 @@ const VocalizationContext = React.createContext<{
 
 export const useVocalizations = () => {
     const {vocalizationState, vocalizationDispatch, vocalizationSelection, vocalizationSelectionDispatch} = useContext(VocalizationContext)
-    const {setTimeFocus} = useTimeFocus()
+    const {focusTime, setTimeFocus} = useTimeFocus()
     const addVocalization = useCallback((vocalization: Vocalization) => {
         if (!vocalization.vocalizationId) {
             vocalization.vocalizationId = randomAlphaString(10)
@@ -216,19 +216,45 @@ export const useVocalizations = () => {
             }
         }
     }, [vocalizationSelectionDispatch, vocalizationState, setTimeFocus, vocalizations])
+	const selectNextOrPrevVocalization = useCallback((which: 'next' | 'prev') => {
+        let newIndex: number | undefined
+        if (selectedVocalization) {
+            const i = vocalizations.map(v => (v.vocalizationId)).indexOf(selectedVocalization.vocalizationId)
+            if (which === 'next') {
+                newIndex = i < 0 ? 0 : i + 1
+            }
+            else {
+                newIndex = i < 0 ? 0 : i - 1
+            }
+            if (newIndex === undefined) return
+            if (newIndex < 0) return
+            if (newIndex >= vocalizations.length) return
+            setSelectedVocalizationId(vocalizations[newIndex].vocalizationId)
+        }
+        else {
+            if (focusTime === undefined) return
+            if (vocalizationState === undefined) return
+            const focusFrame = Math.floor(focusTime * vocalizationState.samplingFrequency)
+            const a = which === 'next' ? (
+                vocalizations.filter(v => (v.startFrame >= focusFrame))
+            ) : (
+                vocalizations.filter(v => (v.endFrame <= focusFrame))
+            )
+            if (a.length === 0) return
+            if (which === 'next') {
+                setSelectedVocalizationId(a[0].vocalizationId)
+            }
+            else {
+                setSelectedVocalizationId(a[a.length - 1].vocalizationId)
+            }
+        }
+	}, [selectedVocalization, vocalizations, setSelectedVocalizationId, focusTime, vocalizationState])
+    const selectNextVocalization = useCallback(() => {
+        selectNextOrPrevVocalization('next')
+    }, [selectNextOrPrevVocalization])
     const selectPreviousVocalization = useCallback(() => {
-        if (!selectedVocalization) return
-        const i = vocalizations.map(v => (v.vocalizationId)).indexOf(selectedVocalization.vocalizationId)
-        if (i < 0) return
-        if (i - 1 < 0) return
-        setSelectedVocalizationId(vocalizations[i - 1].vocalizationId)
-	}, [selectedVocalization, vocalizations, setSelectedVocalizationId])
-	const selectNextVocalization = useCallback(() => {
-        const i = vocalizations.map(v => (v.vocalizationId)).indexOf(selectedVocalization?.vocalizationId || '')
-        const nextIndex = i < 0 ? 0 : i + 1
-        if (nextIndex >= vocalizations.length) return
-        setSelectedVocalizationId(vocalizations[nextIndex].vocalizationId)
-	}, [selectedVocalization, vocalizations, setSelectedVocalizationId])
+        selectNextOrPrevVocalization('prev')
+    }, [selectNextOrPrevVocalization])
     const selectFirstVocalization = useCallback(() => {
         setSelectedVocalizationId(vocalizations[0].vocalizationId)
 	}, [vocalizations, setSelectedVocalizationId])

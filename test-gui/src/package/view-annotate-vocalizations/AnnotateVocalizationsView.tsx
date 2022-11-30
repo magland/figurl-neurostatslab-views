@@ -1,3 +1,4 @@
+import { randomAlphaString } from "@figurl/core-utils";
 import { Splitter } from "@figurl/core-views";
 import { useUrlState } from "@figurl/interface";
 import { AnnotationContext, useTimeFocus } from "@figurl/timeseries-views";
@@ -17,8 +18,7 @@ type Props = {
 
 const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, height}) => {
 	const {spectrogram, video} = data
-	const {vocalizations, setSelectedVocalizationId, vocalizationState, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, selectedVocalization, removeVocalizationLabel} = useVocalizations()
-	const {focusTime} = useTimeFocus()
+	const {vocalizations, vocalizationState, setSelectedVocalizationId, selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, removeVocalizationLabel, selectedVocalization, addVocalization} = useVocalizations()
 	const {annotationDispatch} = useContext(AnnotationContext)
 	const {urlState, updateUrlState} = useUrlState()
 	const samplingFrequencies = useMemo(() => ({
@@ -45,9 +45,23 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 			}
 		})
 	}, [vocalizations, annotationDispatch, vocalizationState])
+	
+	const {focusTime, focusTimeInterval} = useTimeFocus()
+	const focusFrameInterval = useMemo(() => {
+		if (!vocalizationState) return undefined
+		if (!focusTimeInterval) return undefined
+		return [
+			Math.floor(focusTimeInterval[0] * vocalizationState.samplingFrequency),
+			Math.ceil(focusTimeInterval[1] * vocalizationState.samplingFrequency)
+		]
+	}, [vocalizationState, focusTimeInterval])
+
 	useEffect(() => {
 		// when focus time changes, set vocalization ID
-		if (focusTime === undefined) return
+		if (focusTime === undefined) {
+			setSelectedVocalizationId(undefined)
+			return
+		}
 		if (vocalizationState === undefined) return
 		const focusFrame = Math.floor(focusTime * vocalizationState.samplingFrequency)
 		for (let v of vocalizations) {
@@ -56,31 +70,42 @@ const AnnotateVocalizationsView: FunctionComponent<Props> = ({data, width, heigh
 				return
 			}
 		}
+		setSelectedVocalizationId(undefined)
 	}, [focusTime, vocalizations, vocalizationState, setSelectedVocalizationId])
-	const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback((e) => {
-		if ((!e.ctrlKey) && (!e.shiftKey)) {
-			if (e.key === 'n') {
-				selectNextVocalization()
-			}
-			else if (e.key === 'p') {
-				selectPreviousVocalization()
-			}
-			else if (e.key === 'r') {
-				selectRandomVocalizationWithoutPose()
-			}
-			else if (e.key === 'a') {
-				if (!selectedVocalization) return
+
+    const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = useCallback((e) => {
+		if ((e.key === '>') && (e.shiftKey) && (!e.ctrlKey)) {
+			selectNextVocalization()
+		}
+		if ((e.key === '<') && (e.shiftKey) && (!e.ctrlKey)) {
+			selectPreviousVocalization()
+		}
+		if ((e.key === 'r') && (!e.shiftKey) && (!e.ctrlKey)) {
+			selectRandomVocalizationWithoutPose()
+		}
+		if ((e.key === 'a') && (!e.shiftKey) && (!e.ctrlKey)) {
+			if (selectedVocalization) {
 				addVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
 			}
-			else if (e.key === 'u') {
-				if (!selectedVocalization) return
-				removeVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
-			}
-			else if (e.key === 'd') {
-				updateUrlState({dev: (urlState.dev !== true)})
+			else if (focusFrameInterval) {
+				const id = randomAlphaString(10)
+				addVocalization({
+					vocalizationId: id,
+					labels: ['accept'],
+					startFrame: focusFrameInterval[0],
+					endFrame: focusFrameInterval[1]
+				})
 			}
 		}
-	}, [selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, selectedVocalization, removeVocalizationLabel, urlState, updateUrlState])
+		if ((e.key === 'u') && (!e.shiftKey) && (!e.ctrlKey)) {
+			if (!selectedVocalization) return
+			removeVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
+		}
+		else if (e.key === 'd') {
+			updateUrlState({dev: (urlState.dev !== true)})
+		}
+	}, [selectNextVocalization, selectPreviousVocalization, selectRandomVocalizationWithoutPose, addVocalizationLabel, selectedVocalization, removeVocalizationLabel, urlState, updateUrlState, addVocalization, focusFrameInterval])
+
 	return (
 		<div
 			onKeyDown={handleKeyDown}
