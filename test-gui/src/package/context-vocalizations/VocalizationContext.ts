@@ -282,7 +282,7 @@ export const useVocalizations = () => {
     const removeVocalizationLabel = useCallback((vocalizationId: string, label: string) => {
         vocalizationDispatch && vocalizationDispatch({type: 'removeVocalizationLabel', vocalizationId, label})
     }, [vocalizationDispatch])
-    const setPose = useCallback((vocalizationId: string, pose: VocalizationPose) => {
+    const setPose = useCallback((vocalizationId: string, pose: VocalizationPose | undefined) => {
         vocalizationDispatch && vocalizationDispatch({type: 'setPose', vocalizationId, pose})
     }, [vocalizationDispatch])
     const addPosePoint = useCallback((vocalizationId: string, point: {x: number, y: number}) => {

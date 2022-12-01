@@ -30,7 +30,7 @@ type VocalizationAction = {
 } | {
     type: 'setPose'
     vocalizationId: string
-    pose: VocalizationPose
+    pose: VocalizationPose | undefined
 } | {
     type: 'removePose'
     vocalizationId: string
