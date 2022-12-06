@@ -33,6 +33,10 @@ const HelpWindow: FunctionComponent<Props> = () => {
 					</TableRow>
 				</TableBody>
 			</Table>
+			<h3>Pose view</h3>
+			<p>Shift+mouse-wheel to zoom</p>
+			<p>Mouse-click to define pose positions</p>
+			<p>Mouse-click and drag to edit pose positions</p>
 		</div>
 	)
 }

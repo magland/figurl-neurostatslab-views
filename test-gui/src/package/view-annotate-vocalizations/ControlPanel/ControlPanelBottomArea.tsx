@@ -55,7 +55,7 @@ const ControlPanelBottomArea: FunctionComponent<Props> = ({width, height, onComm
 
 const TopRow: FunctionComponent<{width: number, height: number, label: string, onCommand: (c: Command) => void}> = ({width, height, label, onCommand}) => {
 	const elementWidths = [30, 70, 100, 70, 30, 40]
-	const titles = ['first vocalization', 'previous vocalization', '', 'next vocalization', 'last vocalization', 'random vocalization without pose']
+	const titles = ['select first vocalization', 'select previous vocalization (<)', '', 'select next vocalization (>)', 'select last vocalization', 'select random vocalization without pose (r)']
 	const sumWidths = elementWidths.reduce((prev, cur) => (prev + cur), 0)
 	const spacing = (width - sumWidths) / (elementWidths.length + 1)
 	const elementPositions: number[] = []
@@ -145,10 +145,10 @@ const SelectedVocalizationRow: FunctionComponent<{width: number, height: number,
 			</div>
 			<div style={{position: 'absolute', top: labelHeight, width}}>
 				<div style={{position: 'absolute', left: spacing}}>
-					<button disabled={!selectedVocalization || selectedVocalization.labels.includes('accept')} onClick={() => onCommand('accept-vocalization')} style={buttonStyle}>Accept</button>
+					<button disabled={!selectedVocalization || selectedVocalization.labels.includes('accept')} onClick={() => onCommand('accept-vocalization')} style={buttonStyle} title="Accept selected vocalization (a)">Accept</button>
 				</div>
 				<div style={{position: 'absolute', left: spacing + W + spacing}}>
-					<button disabled={!selectedVocalization || !selectedVocalization.labels.includes('accept')} onClick={() => onCommand('unaccept-vocalization')} style={buttonStyle}>Unaccept</button>
+					<button disabled={!selectedVocalization || !selectedVocalization.labels.includes('accept')} onClick={() => onCommand('unaccept-vocalization')} style={buttonStyle} title="Unaccept selected vocalization (u)">Unaccept</button>
 				</div>
 				<div style={{position: 'absolute', left: spacing + W + spacing + W + spacing}}>
 					<button disabled={!focusFrameInterval} onClick={() => onCommand('add-vocalization')} style={buttonStyle}>Add</button>

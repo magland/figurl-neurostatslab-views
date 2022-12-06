@@ -37,7 +37,7 @@ const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, vide
 						objectId: `connector-${ii}`,
 						objectId1: `pt-${ii - 1}`,
 						objectId2: `pt-${ii}`,
-						attributes: {color: 'yellow', dash: [5, 5]}
+						attributes: {color: 'yellow', dash: []}
 					})
 				}
 			})
@@ -100,9 +100,9 @@ const PoseViewport: FunctionComponent<Props> = ({width, height, videoWidth, vide
 	)
 }
 
-const colorForPointIndex = (ii: number) => {
+export const colorForPointIndex = (ii: number) => {
 	if (ii === 0) return 'orange'
-	else if (ii === 1) return 'magenta'
+	else if (ii === 1) return 'lightgreen'
 	else return 'blue'
 }
 

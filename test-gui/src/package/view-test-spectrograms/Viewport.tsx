@@ -38,7 +38,7 @@ const Viewport: FunctionComponent<Props> = ({width, height, image, postureAnnota
 					objectId: `connector-${ii}`,
 					objectId1: mmPrev.key,
 					objectId2: mm.key,
-					attributes: {color: 'yellow', dash: [5, 5]}
+					attributes: {color: 'yellow', dash: []}
 				})
 			}
 		}, [])

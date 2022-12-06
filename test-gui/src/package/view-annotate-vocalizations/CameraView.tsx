@@ -2,6 +2,7 @@ import { Button } from "@material-ui/core";
 import { FunctionComponent, useCallback, useMemo, useState } from "react";
 import { useVocalizations } from "../context-vocalizations";
 import CameraViewArea from "./CameraViewArea";
+import { colorForPointIndex } from "./PoseViewport";
 
 type Props ={
 	width: number
@@ -17,9 +18,10 @@ type Props ={
 
 const CameraView: FunctionComponent<Props> = ({width, height, video, canEditPose}) => {
 	const topPanelHeight = 100
-	const viewAreaWidth = width
-	const viewAreaHeight = height - topPanelHeight
-	const {selectedVocalization, removePose, setBox, vocalizations, setPose} = useVocalizations()
+	const legendWidth = 50
+	const viewAreaWidth = width - legendWidth
+	const viewAreaHeight = height - topPanelHeight - 10
+	const {selectedVocalization, removePose, setBox, vocalizations, setPose, addVocalizationLabel} = useVocalizations()
 	const [annotatingBox, setAnnotatingBox] = useState(false)
 	const handleClearPose = useCallback(() => {
 		selectedVocalization && removePose(selectedVocalization?.vocalizationId)
@@ -46,7 +48,8 @@ const CameraView: FunctionComponent<Props> = ({width, height, video, canEditPose
 		if (!previousVocalization) return
 		if (!selectedVocalization) return
 		setPose(selectedVocalization.vocalizationId, previousVocalization.pose)
-	}, [previousVocalization, selectedVocalization, setPose])
+		addVocalizationLabel(selectedVocalization.vocalizationId, 'accept')
+	}, [previousVocalization, selectedVocalization, setPose, addVocalizationLabel])
 
 	return (
 		<div style={{position: 'absolute', width, height}}>
@@ -71,6 +74,13 @@ const CameraView: FunctionComponent<Props> = ({width, height, video, canEditPose
 					canEditPose={canEditPose}
 					onSelectRect={handleSelectRect}
 				/>
+			</div>
+			<div style={{position: 'absolute', top: topPanelHeight, left: viewAreaWidth, width: legendWidth, height: viewAreaHeight}}>
+				<div><span style={{color: colorForPointIndex(0), fontSize: 25}}>&#x25cf;</span></div>
+				<div>head</div>
+				<div>&nbsp;</div>
+				<div><span style={{color: colorForPointIndex(1), fontSize: 25}}>&#x25cf;</span></div>
+				<div>tail</div>
 			</div>
 		</div>
 	)
