@@ -64,15 +64,23 @@ const ControlPanel: FunctionComponent<Props> = ({width, height}) => {
 		if (!vocalizationDispatch) return
 		if (!first.current) return
 		if (uri) {
-			getFileData(uri, () => {}).then((x) => {
-				if (!x) {
+			getFileData(uri, () => {}, {responseType: 'binary'}).then((x) => {
+				const dec = new TextDecoder()
+				const uri2 = dec.decode(x)
+				if (!uri2) {
 					console.warn('Empty state')
 					return
 				}
-				vocalizationDispatch({type: 'setVocalizationState', vocalizationState: x})
-				setSaveState({
-					savedObjectJson: JSONStringifyDeterministic(x),
-					savedUri: uri
+				getFileData(uri2, () => {}, {responseType: 'json'}).then((y) => {
+					vocalizationDispatch({type: 'setVocalizationState', vocalizationState: y})
+					setSaveState({
+						savedObjectJson: JSONStringifyDeterministic(x),
+						savedUri: uri
+					})
+				}).catch((err: Error) => {
+					console.warn('Problem getting state')
+					console.warn(err)
+					setErrorString(`Error getting resolved URI ${uri2}`)
 				})
 			}).catch((err: Error) => {
 				console.warn('Problem getting state')
